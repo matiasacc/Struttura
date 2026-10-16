@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Struttura · Editor</title>
+<link rel="stylesheet" href="/static/editor.css">
+</head>
+<body>
+<header id="barra">
+  <div class="marca">Struttura <span>Editor</span></div>
+  <div class="grupo">
+    <button id="b-nuevo" title="Modelo nuevo (elegir tipo)">Nuevo ▾</button>
+    <button id="b-abrir" title="Abrir un CSV (Ctrl+O)">Abrir</button>
+    <button id="b-guardar" title="Guardar (Ctrl+S)">Guardar</button>
+    <button id="b-guardar-como" title="Guardar en otra carpeta o con otro nombre">Guardar como…</button>
+  </div>
+  <div class="grupo">
+    <button id="b-deshacer" title="Deshacer (Ctrl+Z)">↶</button>
+    <button id="b-rehacer" title="Rehacer (Ctrl+Y)">↷</button>
+  </div>
+  <div id="archivo"></div>
+  <div class="grupo der">
+    <button id="b-revisar" title="Cargar el modelo con el programa y mostrar errores y avisos">Revisar</button>
+    <button id="b-calcular" class="principal" title="Guardar, calcular y abrir el informe (F5)">Calcular</button>
+    <button id="b-salir" title="Cerrar el editor">Salir</button>
+  </div>
+</header>
+<nav id="pasos" aria-label="Bloques del modelo"></nav>
+<main id="cuerpo">
+  <section id="izq">
+    <div id="titulo-bloque"></div>
+    <div id="tabla-wrap"></div>
+  </section>
+  <div id="divisor" title="Arrastrar para cambiar el ancho"></div>
+  <section id="der">
+    <div id="herr"></div>
+    <div id="lienzo-wrap"><canvas id="lienzo"></canvas><div id="tip"></div></div>
+    <div id="inspector"></div>
+  </section>
+</main>
+<footer id="estado">
+  <div id="estado-linea"></div>
+  <div id="estado-detalle"></div>
+</footer>
+<div id="modal" hidden></div>
+<div id="listas" hidden></div>
+<script>/*__CFG__*/</script>
+<script src="/static/editor.js"></script>
+<script src="/static/visor.js"></script>
+<script src="/static/inicio.js"></script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+# Pórtico con temperatura (uniforme + gradiente), fuerza puntual inclinada, momento puntual y carga trapecial axial.
+# Unidades: kN y cm.
+PROYECTO
+proyecto;Ejemplo 4 - Temperatura y cargas puntuales
+unidad_fuerza;kN
+unidad_longitud;cm
+tipo;portico
+
+NODOS
+id;x;y
+1;0;0
+2;0;300
+3;500;300
+4;500;0
+5;250;300
+
+MATERIALES
+id;E;nu;fy;sadm;alfa
+hormigon;3000;0.2;;1.5;0.00001
+
+SECCIONES
+id;tipo;b;h
+col;rectangular;30;40
+viga;rectangular;30;60
+
+BARRAS
+id;nodo_i;nodo_j;material;seccion;art_i;art_j
+C1;1;2;hormigon;col;0;0
+V1;2;5;hormigon;viga;0;0
+V2;5;3;hormigon;viga;0;0
+C2;4;3;hormigon;col;0;1
+
+APOYOS
+nodo;ux;uy;phi
+1;1;1;1
+4;1;1;1
+
+CARGAS EN BARRAS
+caso;barra;tipo;valor;valor2;a;b
+TEMP;V1;temp;25;5;;
+TEMP;V2;temp;25;5;;
+PUNT;V1;Pgy;-40;;100;
+PUNT;V2;Mp;600;;100;
+PUNT;C1;Pgx;15;;150;
+AXIAL;C1;qa;-0.05;-0.15;;

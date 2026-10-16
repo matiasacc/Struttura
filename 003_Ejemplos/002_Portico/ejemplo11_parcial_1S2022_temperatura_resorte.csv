@@ -1,0 +1,47 @@
+# 1er parcial 1er sem 2022 (Cálculo Estructural I): barra a 60° con ΔT = 30 °C en la cara superior, momento M en el nudo 2,
+# desplazamiento vertical prefijado uy = 0,6 mm en el nudo 2 y resorte horizontal K_R = 3000 N/mm. Unidades: N y mm.
+# Cátedra (Estado II): u2 = (-0,34892; 0,6; 0,006588); resorte 1046,8 N; fuerzas de extremo locales (Estado II) N=-65231,5 V=2828,3 Mi=1790697 Mj=3865917.
+# Estado I: Ft = 68040 N y Mt = 1134000 N.mm (el programa suma ambos estados por superposición).
+PROYECTO
+proyecto;Parcial 1S2022 - temperatura, resorte y prefijado
+unidad_fuerza;N
+unidad_longitud;mm
+tipo;portico
+
+NODOS
+id;x;y
+1;0;0
+2;1000;1732.0508075688772
+
+MATERIALES
+id;E;nu;alfa
+acero;210000;0.3;0.000012
+
+SECCIONES
+id;tipo;I;A;h
+s;generica;1500000;1800;100
+
+BARRAS
+id;nodo_i;nodo_j;material;seccion
+1;1;2;acero;s
+
+APOYOS
+nodo;ux;uy;phi
+1;1;1;1
+2;0;1;0
+
+RESORTES
+nodo;kx;ky;kphi
+2;3000;;
+
+CARGAS
+caso;nodo;Px;Py;M
+C;2;0;0;5000000
+
+CARGAS EN BARRAS
+caso;barra;tipo;valor;valor2;a;b
+C;1;temp;30;0;;
+
+DESPLAZAMIENTOS PREFIJADOS
+caso;nodo;ux;uy;phi
+C;2;0;0.6;0

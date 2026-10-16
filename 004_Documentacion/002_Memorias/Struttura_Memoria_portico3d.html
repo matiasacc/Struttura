@@ -1,0 +1,358 @@
+<!DOCTYPE html><html lang='es'><head><meta charset='utf-8'><title>Struttura — Memoria del pórtico 3D</title><style>
+@page { size: A4; margin: 0; }
+html, body { margin: 0; padding: 0; background: #fff; }
+body { font-family: "Times New Roman", "Liberation Serif", Georgia, serif; font-size: 11pt;
+       color: #000; line-height: 1.35; }
+table.hoja { width: 100%; border-collapse: collapse; table-layout: fixed; }
+table.hoja > thead > tr > td, table.hoja > tbody > tr > td, table.hoja > tfoot > tr > td
+   { padding: 0; border: 0; text-align: left; vertical-align: top; }
+.esp { height: 14mm; }
+.contenido { max-width: 186mm; margin: 0 auto; padding: 0 6mm; }
+.contenido h1 { font-size: 18pt; text-align: center; margin: 0 0 4pt; }
+.sub { text-align: center; font-size: 10.5pt; margin-bottom: 10pt; border-bottom: 2px solid #000; padding-bottom: 6pt; }
+.contenido h2 { font-size: 14pt; border-bottom: 1px solid #000; margin: 22pt 0 6pt; padding-bottom: 2pt; }
+.contenido h3 { font-size: 12pt; margin: 14pt 0 4pt; }
+.contenido h4 { font-size: 11pt; font-style: italic; margin: 10pt 0 2pt; }
+.contenido h2, .contenido h3, .contenido h4 { page-break-after: avoid; break-after: avoid; }
+.contenido table { border-collapse: collapse; margin: 4pt 0 10pt; font-size: 9.5pt; }
+.contenido th, .contenido td { padding: 1.5pt 9pt; text-align: center; }
+.contenido th { border-top: 1.5px solid #000; border-bottom: 1px solid #000; font-weight: bold; }
+.contenido tr:last-child td { border-bottom: 1.5px solid #000; }
+.contenido td.n { text-align: right; font-variant-numeric: tabular-nums; }
+.contenido td.t { text-align: left; }
+.contenido table.datos td:first-child { text-align: left; font-weight: bold; }
+.contenido table.datos td:nth-child(2) { text-align: left; }
+.contenido table.funciones { font-size: 9pt; }
+.contenido table.funciones td { text-align: left; white-space: nowrap; }
+.contenido table.matriz { font-size: 7pt; }
+.contenido table.matriz th, .contenido table.matriz td { padding: 1pt 4pt; }
+.contenido figure { margin: 8pt 0 12pt; page-break-inside: avoid; text-align: center; }
+.contenido figure svg { max-width: 100%; height: auto; }
+.contenido figcaption { font-size: 9.5pt; font-style: italic; }
+.nota { font-size: 9.5pt; margin: 2pt 0 8pt; }
+.ok { font-weight: bold; }
+.aviso { border: 1px solid #000; padding: 4pt 8pt; font-size: 10pt; margin: 6pt 0; }
+ul.conv { margin: 2pt 0 8pt 16pt; padding: 0; font-size: 10.5pt; }
+pre.codigo { font-family: "Courier New", "Liberation Mono", monospace; font-size: 8.5pt; border: 1px solid #000;
+             padding: 5pt 8pt; overflow-x: auto; page-break-inside: avoid; line-height: 1.25; }
+code { font-family: "Courier New", "Liberation Mono", monospace; font-size: 9.5pt; }
+.caso { page-break-before: always; }
+.scroll { overflow-x: auto; }
+.boton-imprimir { text-align: center; margin: 22pt 0 10pt; }
+.boton-imprimir button { font-family: inherit; font-size: 11pt; padding: 5pt 22pt; border: 1px solid #000;
+                         background: #f2f2f2; cursor: pointer; }
+.boton-imprimir button:hover { background: #e2e2e2; }
+@media print { .contenido { max-width: none; padding: 0 14mm; } .no-print { display: none !important; } }
+
+.visor { margin: 8pt 0 12pt; page-break-inside: avoid; break-inside: avoid; }
+.visor .ctrl { font-size: 9.5pt; margin: 0 0 4pt; text-align: left; }
+.visor .ctrl button, .visor .ctrl select { font-family: inherit; font-size: 9.5pt; padding: 1pt 8pt;
+      border: 1px solid #000; background: #f2f2f2; cursor: pointer; margin-right: 3pt; }
+.visor .ctrl button:hover { background: #e2e2e2; }
+.visor .ctrl label { margin-right: 9pt; white-space: nowrap; }
+.visor svg.lienzo { width: 100%; height: auto; border: 1px solid #000; background: #fff; cursor: grab;
+      touch-action: none; user-select: none; -webkit-user-select: none; }
+.visor svg.lienzo:active { cursor: grabbing; }
+.visor .pie { font-size: 9.5pt; font-style: italic; text-align: center; }
+@media print { .visor .ctrl { display: none !important; } .visor svg.lienzo { border: 0; } }
+
+.visor { position: relative; }
+.visor .ayuda { font-size: 8.5pt; color: #444; text-align: center; margin: 2pt 0 0; }
+.visor .tip { position: absolute; display: none; pointer-events: none; z-index: 5; white-space: nowrap;
+      background: rgba(255,255,255,.97); border: 1px solid #9aa5a3; border-radius: 3px; padding: 3px 8px;
+      font: 9.5pt/1.4 sans-serif; color: #222; text-align: left; box-shadow: 0 1px 5px rgba(0,0,0,.2); }
+.visor .tip .lib { color: #777; }
+.visor .ctrl .sep { display: inline-block; width: 10pt; }
+.visor .ctrl select:disabled { opacity: .45; }
+@media print { .visor .ayuda, .visor .tip { display: none !important; } }
+
+.visor { margin: 8pt 0 12pt; page-break-inside: avoid; }
+.visor .ctrl { font-size: 9.5pt; margin: 0 0 4pt; text-align: left; }
+.visor .ctrl button, .visor .ctrl select { font-family: inherit; font-size: 9.5pt; padding: 1pt 8pt;
+      border: 1px solid #000; background: #f2f2f2; cursor: pointer; margin-right: 3pt; }
+.visor .ctrl label { margin-right: 9pt; white-space: nowrap; }
+.visor svg.lienzo { width: 100%; height: auto; border: 1px solid #000; background: #fff; cursor: grab; touch-action: none; user-select: none; }
+.visor .pie { font-size: 9.5pt; font-style: italic; text-align: center; }
+.contenido table.tensor { font-size: 11pt; margin: 4pt 0 8pt; }
+.contenido table.tensor td, .contenido table.tensor th { padding: 2pt 14pt; }
+@media print { .visor .ctrl { display: none !important; } .visor svg.lienzo { border: 0; } }
+
+.visor { position: relative; }
+.visor .ayuda { font-size: 8.5pt; color: #444; text-align: center; margin: 2pt 0 0; }
+.visor .tip { position: absolute; display: none; pointer-events: none; z-index: 5; white-space: nowrap;
+      background: rgba(255,255,255,.97); border: 1px solid #9aa5a3; border-radius: 3px; padding: 3px 8px;
+      font: 9.5pt/1.4 sans-serif; color: #222; text-align: left; box-shadow: 0 1px 5px rgba(0,0,0,.2); }
+.visor .tip .lib { color: #777; }
+.visor .ctrl .sep { display: inline-block; width: 10pt; }
+.visor .ctrl select:disabled { opacity: .45; }
+@media print { .visor .ayuda, .visor .tip { display: none !important; } }
+</style><script>
+// Escala de color de la utilización (igual en los 4 visores): 0 verde · 0,5 amarillo · 1 rojo (fluencia) · 1,3 granate
+function stColU(u) {
+  var stops = [[0, [42, 157, 143]], [0.5, [233, 196, 106]], [1, [230, 57, 70]], [1.3, [120, 0, 30]]];
+  u = Math.max(0, Math.min(1.3, Math.round(u * 40) / 40));
+  for (var s = 1; s < stops.length; s++) if (u <= stops[s][0]) { var a = stops[s - 1], b = stops[s], f = (u - a[0]) / (b[0] - a[0]);
+    return "rgb(" + [0, 1, 2].map(function (i) { return Math.round(a[1][i] + f * (b[1][i] - a[1][i])); }).join(",") + ")"; }
+  return "rgb(120,0,30)"; }
+// Texto del recuadro de la utilización en un punto (planos): vm = σeq; fy, sadm pueden ser null; us = unidad de tensión
+function stTextoU(id, xs, vm, fy, sadm, fm, us, ul, rn) {
+  rn = rn || "fy";
+  var h = "<b>Barra " + id + "</b><br>x = " + fm(xs) + " " + ul + "<br>σeq = " + fm(vm) + " " + us;
+  if (fy) h += "<br>σeq/" + rn + " = <b>" + (vm / fy).toFixed(3) + "</b>" + (vm / fy > 1 ? " (supera 1)" : "");
+  if (sadm) h += "<br>σeq/σadm = <b>" + (vm / sadm).toFixed(3) + "</b>" + (vm / sadm > 1 ? " (supera 1)" : "");
+  if (!fy && !sadm) h += "<br><span class='lib'>(el material no tiene resistencia de referencia ni σadm)</span>";
+  return h; }
+function stZoomEn(st, f, mx, my, cx, cy, zmin, zmax) {      // zoom hacia el punto (mx,my) del visor
+  var z = Math.max(zmin, Math.min(zmax, st.zoom * f)), g = z / st.zoom;
+  st.ox = mx - (mx - st.ox - cx) * g - cx; st.oy = my - (my - st.oy - cy) * g - cy; st.zoom = z;
+}
+// A = {W, cx, cy, zmin, zmax, rotar(dx,dy)|null, pan(dx,dy), zoomFactor(f,mx,my), reset(), dib()}
+function stNav(svg, A) {
+  var d = null, raf = 0, pr = 0, pp = [0, 0], pz = 1, pm = null, hecho = false;
+  function k() { return A.W / svg.getBoundingClientRect().width; }
+  function flush() { raf = 0;
+    if (pr && A.rotar) { A.rotar(pr[0], pr[1]); } pr = 0;
+    if (pp[0] || pp[1]) { A.pan(pp[0], pp[1]); } pp = [0, 0];
+    if (pz !== 1) { A.zoomFactor(pz, pm[0], pm[1]); } pz = 1;
+    A.dib(); }
+  function prog() { if (!raf) raf = requestAnimationFrame(flush); }
+  svg.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+  svg.addEventListener("pointerdown", function (e) { d = {x: e.clientX, y: e.clientY}; svg.setPointerCapture(e.pointerId); e.preventDefault(); });
+  svg.addEventListener("pointermove", function (e) {
+    if (!d) return;
+    var dx = (e.clientX - d.x) * k(), dy = (e.clientY - d.y) * k(), b = e.buttons;
+    d.x = e.clientX; d.y = e.clientY;
+    var r = svg.getBoundingClientRect(), mx = (e.clientX - r.left) * k(), my = (e.clientY - r.top) * k();
+    var pan = e.ctrlKey || e.metaKey || (b & 2), zoom = e.shiftKey && !pan;
+    if (pan || (!A.rotar && !zoom)) { pp[0] += dx; pp[1] += dy; }
+    else if (zoom) { pz *= Math.exp(-dy * 0.012); pm = [mx, my]; }
+    else { pr = pr || [0, 0]; pr[0] += dx; pr[1] += dy; }
+    prog(); });
+  function fin() { d = null; }
+  svg.addEventListener("pointerup", fin); svg.addEventListener("pointercancel", fin);
+  svg.addEventListener("wheel", function (e) { e.preventDefault(); var r = svg.getBoundingClientRect();
+    pm = [(e.clientX - r.left) * k(), (e.clientY - r.top) * k()]; pz *= e.deltaY < 0 ? 1.12 : 1 / 1.12; prog(); }, {passive: false});
+  svg.addEventListener("dblclick", function () { A.reset(); A.dib(); });
+}
+// Acumulador de trazos: pocos <path> en vez de miles de <line> (clave = estilo)
+function stLotes(NS, padre) {
+  var lotes = {};
+  return {
+    l: function (p, q, col, w, dash, op) { var key = col + "|" + w + "|" + (dash || "") + "|" + (op || 1);
+      (lotes[key] = lotes[key] || []).push("M" + p[0].toFixed(1) + " " + p[1].toFixed(1) + "L" + q[0].toFixed(1) + " " + q[1].toFixed(1)); },
+    vaciar: function () { for (var key in lotes) { var a = key.split("|"), e = document.createElementNS(NS, "path");
+      e.setAttribute("d", lotes[key].join("")); e.setAttribute("stroke", a[0]); e.setAttribute("stroke-width", a[1]);
+      e.setAttribute("fill", "none"); e.setAttribute("stroke-linecap", "round"); if (a[2]) e.setAttribute("stroke-dasharray", a[2]);
+      if (a[3] !== "1") e.setAttribute("opacity", a[3]); padre.appendChild(e); } lotes = {}; }
+  };
+}
+
+// Texto del recuadro de condiciones de borde de un nudo (nom: nombres de GDL; r: restringido; v: valor impuesto; ks: resortes)
+function stTexto(tit, nom, r, v, ks, fm, uf, ul) {
+  var h = "<b>" + tit + "</b>", lib = [], i, rot;
+  for (i = 0; i < nom.length; i++) {
+    rot = nom[i].charAt(0) === "φ";
+    if (r[i]) { var nz = Math.abs(v[i]) > 1e-12; h += "<br>" + nom[i] + " = " + (nz ? fm(v[i]) + (rot ? " rad" : " " + ul) + " <i>(prefijado)</i>" : "0"); }
+    else lib.push(nom[i]); }
+  for (i = 0; i < nom.length; i++) if (ks && ks[i] > 0) { rot = nom[i].charAt(0) === "φ";
+    h += "<br>k" + (rot ? "φ" + nom[i].slice(1) : nom[i].slice(1)) + " = " + fm(ks[i]) + " " + (rot ? uf + "·" + ul + "/rad" : uf + "/" + ul) + " <i>(resorte)</i>"; }
+  if (lib.length) h += '<br><span class="lib">libre: ' + lib.join(", ") + "</span>";
+  return h; }
+// Recuadro al pasar el mouse (o tocar) sobre un nudo: getHits() -> [{x, y, html}] en coordenadas del visor
+function stTip(root, svg, W, getHits) {
+  var tip = document.createElement("div"); tip.className = "tip"; root.appendChild(tip);
+  function ver(e) {
+    var rc = svg.getBoundingClientRect(), k = rc.width / W, mejor = null, dm = 13;
+    getHits().forEach(function (h) { var d = Math.hypot(rc.left + h.x * k - e.clientX, rc.top + h.y * k - e.clientY); if (d < dm) { dm = d; mejor = h; } });
+    if (!mejor) { tip.style.display = "none"; return; }
+    tip.innerHTML = mejor.html; tip.style.display = "block";
+    var rr = root.getBoundingClientRect(), x = e.clientX - rr.left + 14, y = e.clientY - rr.top + 14;
+    if (x + tip.offsetWidth > rr.width) x = e.clientX - rr.left - tip.offsetWidth - 10;
+    tip.style.left = x + "px"; tip.style.top = y + "px"; }
+  svg.addEventListener("pointermove", function (e) { if (e.buttons) tip.style.display = "none"; else ver(e); });
+  svg.addEventListener("pointerdown", function (e) { if (e.pointerType === "touch") ver(e); });
+  svg.addEventListener("pointerleave", function () { tip.style.display = "none"; });
+}
+
+function st3d(id, D) {
+  var root = document.getElementById(id), NS = "http://www.w3.org/2000/svg", W = 780, H = 560;
+  var S = {az: -35, el: 25, base: 1, zoom: 1, ox: 0, oy: 0, caso: 0, modo: "carg", comp: 0, barra: -1, ids: true, cargas: false, val: true, unica: D.escala === "global"};
+  var VISTAS = {iso: [-35, 25], planta: [0, 90], frente: [0, 0], lateral: [90, 0]};
+  var MODOS = ["Estructura", "Cargas", "Deformada", "Utilización", "N", "Vy", "Vz", "T", "My", "Mz"];
+  var c0 = D.centro, dim = D.dim, ca, sa, ce, se;
+  function fm(v) { if (v === 0) return "0"; var a = Math.abs(v); return (a >= 1e-3 && a < 1e7) ? String(+v.toPrecision(4)) : v.toExponential(2); }
+  root.innerHTML = '<div class="ctrl"></div><svg class="lienzo" viewBox="0 0 ' + W + ' ' + H + '"></svg>' +
+                   '<div class="pie">' + D.pie + '</div><div class="ayuda">' + D.ayuda + '</div>';
+  var ctrl = root.querySelector(".ctrl"), svg = root.querySelector("svg"), selBarra;
+  function boton(t, f) { var b = document.createElement("button"); b.textContent = t; b.onclick = f; ctrl.appendChild(b); }
+  function lab(t) { var l = document.createElement("label"); l.appendChild(document.createTextNode(t + " ")); ctrl.appendChild(l); return l; }
+  function sel(padre, opts, val, f) { var s = document.createElement("select");
+    opts.forEach(function (o, i) { var e = document.createElement("option"); e.value = i; e.textContent = o; s.appendChild(e); });
+    s.value = val; s.onchange = function () { f(+s.value); }; padre.appendChild(s); return s; }
+  function chk(t, k) { var l = document.createElement("label"), c = document.createElement("input");
+    c.type = "checkbox"; c.checked = S[k]; c.onchange = function () { S[k] = c.checked; dib(); };
+    l.appendChild(c); l.appendChild(document.createTextNode(" " + t)); ctrl.appendChild(l); }
+  function camara() { var a = S.az * Math.PI / 180, e = S.el * Math.PI / 180; ca = Math.cos(a); sa = Math.sin(a); ce = Math.cos(e); se = Math.sin(e); }
+  function proj(x, y, z) { var x1 = x * ca - y * sa, y1 = x * sa + y * ca; return [x1, -(z * ce + y1 * se)]; }
+  function P(p) { var q = proj(p[0] - c0[0], p[1] - c0[1], p[2] - c0[2]), sc = S.base * S.zoom; return [W / 2 + q[0] * sc + S.ox, H / 2 + q[1] * sc + S.oy]; }
+  function ajustar(vista) {          // encuadra la estructura completa en la vista actual
+    if (vista) { S.az = vista[0]; S.el = vista[1]; }
+    camara(); S.zoom = 1; S.ox = 0; S.oy = 0; S.base = 1;
+    var lo = [1e300, 1e300], hi = [-1e300, -1e300];
+    D.nodos.forEach(function (n) { var q = proj(n[0] - c0[0], n[1] - c0[1], n[2] - c0[2]);
+      for (var i = 0; i < 2; i++) { lo[i] = Math.min(lo[i], q[i]); hi[i] = Math.max(hi[i], q[i]); } });
+    S.base = Math.min(0.80 * W / Math.max(hi[0] - lo[0], 1e-9), 0.74 * H / Math.max(hi[1] - lo[1], 1e-9));
+    S.ox = -S.base * (lo[0] + hi[0]) / 2; S.oy = -S.base * (lo[1] + hi[1]) / 2;
+  }
+  var modoIdx = 1;
+  Object.keys(VISTAS).forEach(function (k) { boton(k, function () { ajustar(VISTAS[k]); dib(); }); });
+  boton("Ajustar", function () { ajustar(); dib(); });
+  ctrl.appendChild(document.createElement("br"));
+  if (D.casos.length > 1) { lab("Caso:"); sel(ctrl, D.casos.map(function (c) { return c.nombre; }), 0, function (v) { S.caso = v; dib(); }); ctrl.appendChild(document.createTextNode(" ")); }
+  lab("Modo:"); sel(ctrl, MODOS, 1, function (v) { modoIdx = v; S.modo = v === 0 ? "est" : v === 1 ? "carg" : v === 2 ? "def" : v === 3 ? "util" : "dia"; if (v > 3) S.comp = v - 4;
+    selBarra.disabled = !(S.modo === "dia" || S.modo === "util"); dib(); });
+  ctrl.appendChild(document.createTextNode(" ")); lab("Barra:");
+  selBarra = sel(ctrl, ["todas"].concat(D.barras.map(function (b) { return b.id; })), 0, function (v) { S.barra = v - 1; dib(); });
+  selBarra.disabled = true; ctrl.appendChild(document.createTextNode(" "));
+  chk("nodos y barras", "ids"); chk("valores", "val"); chk("superponer cargas", "cargas"); chk("escala única", "unica");
+
+  var g, LT, polis, hits = [];
+  function el(t, at, txt) { var e = document.createElementNS(NS, t); for (var k in at) e.setAttribute(k, at[k]); if (txt !== undefined) e.textContent = txt; svg.appendChild(e); return e; }
+  function linea(a, b, col, w, dash, op) { LT.l(P(a), P(b), col, w, dash, op); }
+  function texto(p, t, col, sz) { var q = P(p); el("text", {x: q[0] + 4, y: q[1] - 4, fill: col, "font-size": sz || 11, "font-family": "sans-serif", stroke: "#fff", "stroke-width": 3, "paint-order": "stroke"}, t); }
+  function textoPx(x, y, t, col, sz, anc) { el("text", {x: x, y: y, fill: col, "font-size": sz || 11, "font-family": "sans-serif", "text-anchor": anc || "start"}, t); }
+  function punta(q, dx, dy, col) { var key = col, s = 1;
+    (polis[key] = polis[key] || []).push("M" + q[0].toFixed(1) + " " + q[1].toFixed(1) + "L" + (q[0] - 9 * dx + 4 * dy).toFixed(1) + " " + (q[1] - 9 * dy - 4 * dx).toFixed(1) +
+      "L" + (q[0] - 9 * dx - 4 * dy).toFixed(1) + " " + (q[1] - 9 * dy + 4 * dx).toFixed(1) + "Z"); }
+  function flecha(desde, hasta, col, w, doble) {
+    var p = P(desde), q = P(hasta); LT.l(p, q, col, w);
+    var dx = q[0] - p[0], dy = q[1] - p[1], L = Math.hypot(dx, dy); if (L < 1) return; dx /= L; dy /= L;
+    punta(q, dx, dy, col); if (doble) punta([q[0] - 9 * dx, q[1] - 9 * dy], dx, dy, col); }
+  function add(a, b, k) { return [a[0] + k * b[0], a[1] + k * b[1], a[2] + k * b[2]]; }
+  function sub(a, b) { return [a[0] - b[0], a[1] - b[1], a[2] - b[2]]; }
+  function largo(k) { var b = D.barras[k], d = sub(D.nodos[b.j], D.nodos[b.i]); return Math.hypot(d[0], d[1], d[2]); }
+  function col(u) {
+    var stops = [[0, [42, 157, 143]], [0.5, [233, 196, 106]], [1, [230, 57, 70]], [1.3, [120, 0, 30]]];
+    u = Math.max(0, Math.min(1.3, Math.round(u * 40) / 40));
+    for (var s = 1; s < stops.length; s++) if (u <= stops[s][0]) { var a = stops[s - 1], b = stops[s], f = (u - a[0]) / (b[0] - a[0]);
+      return "rgb(" + [0, 1, 2].map(function (i) { return Math.round(a[1][i] + f * (b[1][i] - a[1][i])); }).join(",") + ")"; }
+    return "rgb(120,0,30)"; }
+
+  function dib() {
+    camara(); svg.innerHTML = ""; LT = stLotes(NS, svg); polis = {};
+    var cs = D.casos[S.caso], m = S.modo, una = S.barra >= 0 && (m === "dia" || m === "util");
+    var verCargas = m === "carg" || (m !== "est" && S.cargas);
+    // barras (base)
+    D.barras.forEach(function (b, k) { var A = D.nodos[b.i], B = D.nodos[b.j], c, w, d = "", op = 1;
+      if (m === "def") { c = "#aaa"; w = 1.2; d = "5,4"; }
+      else if (m === "util") { c = "#ccc"; w = 1.6; }
+      else if (m === "dia") { c = una && k === S.barra ? "#555" : "#b5b5b5"; w = una && k === S.barra ? 2.2 : 1.5; }
+      else { c = "#000"; w = 2.4; }
+      linea(A, B, c, w, d, op); });
+    LT.vaciar();
+    // nodos y apoyos (verde = apoyo, naranja = solo resorte); el recuadro muestra las condiciones de borde
+    hits = [];
+    if (m !== "dia" || !una) D.nodos.forEach(function (n) { var p = P(n); el("circle", {cx: p[0], cy: p[1], r: 2.6, fill: "#000"}); });
+    D.apoyos.forEach(function (a, i) { var p = P(D.nodos[a.k]), rig = a.r.some(function (x) { return x; });
+      el("circle", {cx: p[0], cy: p[1], r: 6.5, fill: rig ? "#0b7a6b" : "#d98a00", stroke: "#fff", "stroke-width": 1.5});
+      hits.push({x: p[0], y: p[1], html: stTexto("Nudo " + D.ids[a.k] + (rig ? " · apoyo" : " · resorte"), ["ux", "uy", "uz", "φx", "φy", "φz"], a.r, cs.apo[i], a.ks, fm, D.unid[0], D.unid[1])}); });
+    if (S.ids) { D.barras.forEach(function (b, k) { if (una && k !== S.barra) return; var A = D.nodos[b.i], B = D.nodos[b.j];
+        texto(add(A, sub(B, A), 0.5), b.id, "#1a5fb4", 10.5); });
+      D.nodos.forEach(function (n, k) { texto(n, D.ids[k], "#000", 10.5); }); }
+    // cargas
+    if (verCargas) {
+      cs.F.forEach(function (f) { var k = f[0], F = [f[1], f[2], f[3]], M = [f[4], f[5], f[6]];
+        var nf = Math.hypot(F[0], F[1], F[2]), nm = Math.hypot(M[0], M[1], M[2]), n = D.nodos[k];
+        if (nf > 0) { var d = 0.14 * dim / nf; flecha(add(n, F, -d), n, "#c01c28", 2); if (S.val) texto(add(n, F, -d), fm(nf), "#c01c28", 10); }
+        if (nm > 0) { var d2 = 0.11 * dim / nm; flecha(add(n, M, -d2), add(n, M, d2 * 0.0), "#9141ac", 2, true); if (S.val) texto(add(n, M, -d2), fm(nm), "#9141ac", 10); } });
+      cs.q.forEach(function (q) { var A = D.nodos[D.barras[q.b].i], B = D.nodos[D.barras[q.b].j], n = Math.hypot(q.q[0], q.q[1], q.q[2]); if (!n) return;
+        var AB = sub(B, A); for (var s = 0; s <= 2; s++) { var p = add(A, AB, s / 2); flecha(add(p, q.q, -0.1 * dim / q.qmax), p, "#e66100", 1.4); } });
+      cs.P.forEach(function (p) { var A = D.nodos[D.barras[p.b].i], B = D.nodos[D.barras[p.b].j], q = add(A, sub(B, A), p.t);
+        var n = Math.hypot(p.f[0], p.f[1], p.f[2]); if (n > 0) { flecha(add(q, p.f, -0.12 * dim / n), q, "#c01c28", 2); if (S.val) texto(add(q, p.f, -0.12 * dim / n), fm(n), "#c01c28", 10); } });
+    }
+    // utilización
+    if (m === "util") {
+      cs.util.forEach(function (u, k) { if (!u || (una && k !== S.barra)) return; var b = D.barras[k], A = D.nodos[b.i], AB = sub(D.nodos[b.j], A);
+        for (var s = 0; s < u.length - 1; s++) linea(add(A, AB, s / (u.length - 1)), add(A, AB, (s + 1) / (u.length - 1)), col(Math.max(u[s], u[s + 1])), una ? 7 : 5);
+        for (var s3 = 0; s3 < u.length; s3++) { var q3 = P(add(A, AB, s3 / (u.length - 1)));            // globo al pasar el mouse: utilización en ese punto
+          hits.push({x: q3[0], y: q3[1], html: "<b>Barra " + b.id + "</b><br>x = " + fm(largo(k) * s3 / (u.length - 1)) + " " + D.unid[1] + "<br>utilización = <b>" + u[s3].toFixed(3) + "</b>" + (u[s3] > 1 ? " (supera 1)" : "") + (cs.utilA[k] ? "<br>σeq/σadm = <b>" + cs.utilA[k][s3].toFixed(3) + "</b>" + (cs.utilA[k][s3] > 1 ? " (supera 1)" : "") : "")}); } });
+      LT.vaciar();
+      var gx = W - 190, gy = H - 32; for (var q = 0; q < 100; q++) el("rect", {x: gx + q * 1.5, y: gy, width: 2, height: 10, fill: col(q / 100 * 1.3)});
+      textoPx(gx, gy - 4, D.utilrot, "#000", 10);
+      [[0, "0"], [0.5, "0,5"], [1, "1"]].forEach(function (t) { textoPx(gx + t[0] / 1.3 * 150 - 3, gy + 22, t[1], "#000", 10); });
+    }
+    // deformada
+    if (m === "def") {
+      cs.def.forEach(function (c) { for (var s = 0; s < c.length - 1; s++) linea(c[s], c[s + 1], "#d00", 2.2); });
+      LT.vaciar();
+      cs.desp.forEach(function (d) { if (S.val) texto(add(D.nodos[d[0]], d[1], D.escdef), "|u|=" + fm(d[2]), "#d00", 10); });
+    }
+    // diagramas
+    if (m === "dia") {
+      var esc = D.escdia[S.comp], sgn = D.signo[S.comp], ax = D.eje[S.comp], vg = 0;
+      cs.dia.forEach(function (d) { d.v[S.comp].forEach(function (a) { vg = Math.max(vg, Math.abs(a)); }); });
+      cs.dia.forEach(function (d, k) { if (una && k !== S.barra) return;
+        var b = D.barras[k], A = D.nodos[b.i], v = d.v[S.comp], vm = 0, im = 0;
+        v.forEach(function (a, q) { if (Math.abs(a) > Math.abs(vm)) { vm = a; im = q; } });
+        var e1 = una ? (vm ? 0.3 * largo(k) / Math.abs(vm) : 1) : (S.unica ? esc : (vm ? 0.13 * dim / Math.abs(vm) : 1)), dir = [b.R[ax][0] * sgn, b.R[ax][1] * sgn, b.R[ax][2] * sgn];
+        var pts = d.xs.map(function (x, q) { var p = add(A, b.R[0], x); return [p, add(p, dir, v[q] * e1)]; });
+        var paso = una || D.barras.length <= 30 ? 1 : 2;
+        for (var s = 0; s < pts.length; s += paso) linea(pts[s][0], pts[s][1], "#9bb7e6", 0.8);
+        for (var s2 = 0; s2 < pts.length - 1; s2++) linea(pts[s2][1], pts[s2 + 1][1], "#1a5fb4", una ? 2.6 : 2);
+        if (S.val && vm !== 0 && (una || Math.abs(vm) >= 0.35 * vg)) texto(pts[im][1], fm(vm), "#1a5fb4", 10.5);
+        if (una && S.val) { [0, pts.length - 1].forEach(function (q) { if (Math.abs(v[q]) > 1e-9 * Math.abs(vm) && q !== im) texto(pts[q][1], fm(v[q]), "#555", 10); }); } });
+      LT.vaciar();
+    }
+    // flechas (puntas) acumuladas
+    for (var cl in polis) { var e = el("path", {d: polis[cl].join(""), fill: cl}); }
+    // triedro fijo en pantalla
+    var ox = 44, oy = H - 44, ls = 30;
+    [[[1, 0, 0], "X"], [[0, 1, 0], "Y"], [[0, 0, 1], "Z"]].forEach(function (a) { var q = proj(a[0][0], a[0][1], a[0][2]), sx = ls * q[0], sy = ls * q[1], L = Math.hypot(sx, sy);
+      if (L > 5) { el("line", {x1: ox, y1: oy, x2: ox + sx, y2: oy + sy, stroke: "#555", "stroke-width": 1.4}); textoPx(ox + sx * 1.3, oy + sy * 1.3 + 4, a[1], "#555", 12, "middle"); }
+      else { el("circle", {cx: ox, cy: oy, r: 4, fill: "none", stroke: "#555"}); textoPx(ox + 8, oy + 4, a[1], "#555", 12); } });
+    // rótulo de estado
+    textoPx(10, 18, (D.casos.length > 1 ? "Caso " + cs.nombre + " · " : "") + MODOS[modoIdx] + (una ? " · barra " + D.barras[S.barra].id : ""), "#000", 12);
+    if (m === "dia") textoPx(10, 34, "ordenada hacia " + ["+z", "+y", "+z", "+z", "+z", "−y"][S.comp] + " local; escala " + (una ? "propia de la barra" : "común a todas"), "#555", 10.5);
+  }
+  stNav(svg, {W: W, rotar: function (dx, dy) { S.az += dx * 0.4; S.el = Math.max(-90, Math.min(90, S.el + dy * 0.4)); },
+    pan: function (dx, dy) { S.ox += dx; S.oy += dy; },
+    zoomFactor: function (f, mx, my) { stZoomEn(S, f, mx, my, W / 2, H / 2, 0.2, 80); },
+    reset: function () { ajustar(VISTAS.iso); }, dib: dib});
+  stTip(root, svg, W, function () { return hits; });
+  ajustar(VISTAS.iso); dib();
+}
+</script></head><body><table class="hoja"><thead><tr><td><div class="esp"></div></td></tr></thead><tbody><tr><td><div class="contenido"><h1>Memoria del programa de pórtico espacial 3D</h1><div class='sub'>Qué se usa para calcular: fórmulas, fuente y caso de aplicación (Struttura v1.1.11)</div>
+<h2>0. Mapa de uso</h2><p>De arriba hacia abajo: qué copiás, qué bloques completás (amarillo = obligatorios) y qué obtenés.  Los bloques en gris son opcionales.</p><svg viewBox="0 0 1000 772" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,Helvetica,Arial,sans-serif" role="img" style="max-width:1000px;background:#fff;border:1px solid #d5dde0;border-radius:10px"><defs><marker id="p" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#6b7c85"/></marker></defs><rect x="250" y="10" width="500" height="46" rx="9" fill="#dfe9ec" stroke="#5d8794" stroke-width="1.4"/><text x="262" y="31" font-size="13.5" font-weight="700" fill="#22313a">Cómo se usa: pórtico espacial 3D</text><text x="262" y="52" font-size="12" fill="#33444e">Partís de la plantilla y la completás por bloques</text><rect x="20" y="90" width="960" height="70" rx="9" fill="#f6f1e4" stroke="#b39b5a" stroke-width="1.4"/><text x="32" y="111" font-size="13.5" font-weight="700" fill="#22313a">1 · Copiar plantilla_portico3d.csv y renombrarla</text><text x="32" y="132" font-size="12" fill="#33444e">En PROYECTO:  tipo;portico3d   y las unidades (fuerza y longitud, coherentes entre sí)</text><text x="32" y="149" font-size="12" fill="#33444e">Las líneas que empiezan con # se ignoran; las columnas que no uses se dejan vacías</text><line x1="500" y1="56" x2="500" y2="90" stroke="#6b7c85" stroke-width="1.6" marker-end="url(#p)"/><rect x="20" y="182" width="470" height="28" rx="9" fill="#f1f3f4" stroke="#8a979c" stroke-width="1.4"/><text x="32" y="203" font-size="13.5" font-weight="700" fill="#22313a">2 · Bloques OBLIGATORIOS</text><rect x="510" y="182" width="470" height="28" rx="9" fill="#f1f3f4" stroke="#8a979c" stroke-width="1.4"/><text x="522" y="203" font-size="13.5" font-weight="700" fill="#22313a">Bloques OPCIONALES (según lo que necesites)</text><line x1="500" y1="160" x2="255" y2="182" stroke="#6b7c85" stroke-width="1.6" marker-end="url(#p)"/><line x1="500" y1="160" x2="745" y2="182" stroke="#6b7c85" stroke-width="1.6" marker-end="url(#p)"/><rect x="20" y="212" width="470" height="52" rx="9" fill="#f6f1e4" stroke="#b39b5a" stroke-width="1.4"/><text x="32" y="233" font-size="13.5" font-weight="700" fill="#22313a">NODOS</text><text x="32" y="254" font-size="12" fill="#33444e">id; x; y; z   (Z arriba)</text><rect x="20" y="274" width="470" height="52" rx="9" fill="#f6f1e4" stroke="#b39b5a" stroke-width="1.4"/><text x="32" y="295" font-size="13.5" font-weight="700" fill="#22313a">MATERIALES</text><text x="32" y="316" font-size="12" fill="#33444e">id; E; (G o nu); fy...   o   id; lib  (n.º de la biblioteca)</text><rect x="20" y="336" width="470" height="52" rx="9" fill="#f6f1e4" stroke="#b39b5a" stroke-width="1.4"/><text x="32" y="357" font-size="13.5" font-weight="700" fill="#22313a">SECCIONES</text><text x="32" y="378" font-size="12" fill="#33444e">id; tipo; d; t; b; h ...  (tubo, rectangular, canal, doble_t...)</text><rect x="20" y="398" width="470" height="52" rx="9" fill="#f6f1e4" stroke="#b39b5a" stroke-width="1.4"/><text x="32" y="419" font-size="13.5" font-weight="700" fill="#22313a">BARRAS</text><text x="32" y="440" font-size="12" fill="#33444e">id; nodo_i; nodo_j; material; seccion  [+ art_i / art_j, giro]</text><rect x="20" y="460" width="470" height="52" rx="9" fill="#f6f1e4" stroke="#b39b5a" stroke-width="1.4"/><text x="32" y="481" font-size="13.5" font-weight="700" fill="#22313a">APOYOS</text><text x="32" y="502" font-size="12" fill="#33444e">nodo; ux uy uz phix phiy phiz   (1 = restringido)</text><rect x="510" y="212" width="470" height="52" rx="9" fill="#f1f3f4" stroke="#8a979c" stroke-width="1.4"/><text x="522" y="233" font-size="13.5" font-weight="700" fill="#22313a">CARGAS / CARGAS EN BARRAS</text><text x="522" y="254" font-size="12" fill="#33444e">caso; nodo; Fx Fy Fz Mx My Mz   |   caso; barra; tipo; valor</text><rect x="510" y="274" width="470" height="52" rx="9" fill="#f1f3f4" stroke="#8a979c" stroke-width="1.4"/><text x="522" y="295" font-size="13.5" font-weight="700" fill="#22313a">COMBINACIONES</text><text x="522" y="316" font-size="12" fill="#33444e">combinacion; caso; factor</text><rect x="510" y="336" width="470" height="52" rx="9" fill="#f1f3f4" stroke="#8a979c" stroke-width="1.4"/><text x="522" y="357" font-size="13.5" font-weight="700" fill="#22313a">RESORTES / DESPLAZAMIENTOS PREFIJADOS</text><text x="522" y="378" font-size="12" fill="#33444e">apoyos elásticos y asentamientos</text><rect x="510" y="398" width="470" height="52" rx="9" fill="#f1f3f4" stroke="#8a979c" stroke-width="1.4"/><text x="522" y="419" font-size="13.5" font-weight="700" fill="#22313a">PUNTOS DE TENSION</text><text x="522" y="440" font-size="12" fill="#33444e">id; barra; x; y; z; caso   (tensor y criterio de falla)</text><rect x="510" y="460" width="470" height="52" rx="9" fill="#f1f3f4" stroke="#8a979c" stroke-width="1.4"/><text x="522" y="481" font-size="13.5" font-weight="700" fill="#22313a">SOLDADURAS</text><text x="522" y="502" font-size="12" fill="#33444e">id; barra; extremo; disposicion; electrodo; w  (ver Memoria de soldadura)</text><rect x="510" y="522" width="470" height="52" rx="9" fill="#f1f3f4" stroke="#8a979c" stroke-width="1.4"/><text x="522" y="543" font-size="13.5" font-weight="700" fill="#22313a">PROYECTO: peso_propio</text><text x="522" y="564" font-size="12" fill="#33444e">peso_propio;CASO  (necesita rho en MATERIALES)</text><rect x="20" y="589" width="960" height="52" rx="9" fill="#e6f0e6" stroke="#6f9a72" stroke-width="1.4"/><text x="32" y="610" font-size="13.5" font-weight="700" fill="#22313a">3 · Revisar y calcular</text><text x="32" y="631" font-size="12" fill="#33444e">python struttura.py MIARCHIVO.csv --solo-esquema   (dibuja los datos sin calcular)   →   luego sin el último argumento</text><line x1="500" y1="579" x2="500" y2="589" stroke="#6b7c85" stroke-width="1.6" marker-end="url(#p)"/><rect x="20" y="669" width="960" height="87" rx="9" fill="#f2e6e0" stroke="#b3745a" stroke-width="1.4"/><text x="32" y="690" font-size="13.5" font-weight="700" fill="#22313a">Resultado:  carpeta MIARCHIVO_salida/</text><text x="32" y="711" font-size="12" fill="#33444e">informe.html con visor 3D (estructura, deformada, diagramas, utilización con el mouse)</text><text x="32" y="728" font-size="12" fill="#33444e">desplazamientos, reacciones, esfuerzos, tensiones, tensores y matriz_K (.csv)</text><text x="32" y="745" font-size="12" fill="#33444e">soldaduras.csv (si hay bloque SOLDADURAS)</text><line x1="500" y1="641" x2="500" y2="669" stroke="#6b7c85" stroke-width="1.6" marker-end="url(#p)"/></svg>
+<h2>1. Qué hace</h2><p>Pórtico espacial por el método matricial de rigidez: barras de 12×12 (Euler-Bernoulli), articulaciones por barra, resortes, peso propio, cargas en nudos y en barras, combinaciones, tensor de tensiones en puntos de la sección y criterios de falla.  Uso: <code>python struttura.py MIARCHIVO.csv</code> con <code>tipo;portico3d</code>; plantilla en <code>002_Plantillas/plantilla_portico3d.csv</code>.</p>
+<h2>2. Fundamento de cálculo</h2>
+<table class="">
+<thead><tr><th>Tema</th><th>Fórmula</th><th>Fuente (libro, ecuación, sección)</th><th>Se aplica a</th></tr></thead><tbody>
+<tr><td class="">Rigidez de la barra (12×12)</td><td class="">método matricial de rigidez; viga de Euler-Bernoulli (sin deformación por corte), torsión de Saint-Venant (GJ/L)</td><td class="">Navier-Bernoulli; Gere & Goodno 7ª ed., cap. 5–6 (flexión)</td><td class="">todas las barras</td></tr>
+<tr><td class="">Tensión normal</td><td class="">σ<sub>x</sub> = N/A + M<sub>y</sub>·z/I<sub>y</sub> − M<sub>z</sub>·y/I<sub>z</sub></td><td class="">Gere 7ª ed., (6-38) §6.5 (flexión de vigas asimétricas, ejes principales); signos según las convenciones de este informe</td><td class="">ejes y, z principales y baricéntricos</td></tr>
+<tr><td class="">Articulaciones en barras</td><td class="">condensación estática: k<sub>c</sub> = k<sub>AA</sub> − k<sub>AB</sub>·k<sub>BB</sub><sup>−1</sup>·k<sub>BA</sub>; f<sub>0c</sub> = f<sub>0A</sub> − k<sub>AB</sub>·k<sub>BB</sub><sup>−1</sup>·f<sub>0B</sub></td><td class="">[propio] álgebra estándar del método de rigidez (no es una fórmula de los libros cargados)</td><td class="">barras con art_i / art_j</td></tr>
+<tr><td class="">Peso propio</td><td class="">q = ρ·g·A (carga uniforme por unidad de longitud, en la dirección de la gravedad)</td><td class="">[propio] definición de peso por unidad de longitud</td><td class="">caso con 'peso_propio'</td></tr>
+<tr><td class="">Torsión circular / tubo</td><td class="">τ = T·r/J (circular y tubo); J = π(d⁴ − d<sub>i</sub>⁴)/32</td><td class="">Gere cap. 3; Compendio cap. 10</td><td class="">secciones circular y tubo</td></tr>
+<tr><td class="">Corte de flexión circular / tubo</td><td class="">circular macizo: τ = 4V/(3A)·(1 − (c/R)²);  tubo de pared delgada: τ = V·cosφ/(π·R<sub>m</sub>·t)</td><td class="">Gere 7ª ed., §5.9 (viga circular); pared delgada: [propio] mismo planteamiento de Jourawski, §5.10</td><td class="">circular / tubo</td></tr>
+<tr><td class="">Rectangular maciza</td><td class="">corte τ = (3V/2A)(1 − (2c/h)²);  torsión τ = T/W<sub>t</sub> (cara mayor)</td><td class="">Gere 7ª ed., §5.8 (corte); Compendio cap. 10 (torsión)</td><td class="">sección rectangular</td></tr>
+<tr><td class="">Tubo rectangular</td><td class="">torsión de Bredt: τ = T/(2·A<sub>m</sub>·t);  corte de Jourawski en almas y alas: τ = V·Q/(I·2t)</td><td class="">Compendio cap. 10 (Bredt); Jourawski: Gere §5.10 / §6.7</td><td class="">sección rect_hueca (pared delgada)</td></tr>
+<tr><td class="">Perfil abierto de pared delgada: propiedades</td><td class="">A = Σ t·l;  I = Σ t·l·(distancia al baricentro)² + t·l³·sen²/12; dimensiones de línea media; si I<sub>yz</sub> ≠ 0 se giran los ejes a los principales (tan 2θ = −2I<sub>yz</sub>/(I<sub>y</sub> − I<sub>z</sub>))</td><td class="">Gere 7ª ed., (6-62) §6.9 (idea de línea media); giro de ejes principales: Gere 7ª ed., §12.9</td><td class="">canal, doble T, Té, Z, ángulo</td></tr>
+<tr><td class="">Corte de flexión en pared delgada abierta</td><td class="">τ = V·Q/(I·t), Q = momento estático de la parte más allá del punto</td><td class="">Gere 7ª ed., (6-45) §6.7</td><td class="">toda la línea media del perfil; flujo de corte q = τ·t tangente a la línea media</td></tr>
+<tr><td class="">Centro de corte</td><td class="">la resultante del flujo de V<sub>z</sub> = 1 (V<sub>y</sub> = 1) da el momento y<sub>s</sub> (−z<sub>s</sub>) respecto del baricentro; canal: e = 3b²t<sub>f</sub>/(h·t<sub>w</sub> + 6b·t<sub>f</sub>) desde el alma</td><td class="">Gere 7ª ed., (6-65) §6.9 (canal); casos particulares §6.9 (ángulo en la unión de patas, Z y doble T en el baricentro). El cálculo general por equilibrio de momentos es [propio] y se validó con esos casos</td><td class="">canal, doble T, Té, Z, ángulo</td></tr>
+<tr><td class="">Torsión en pared delgada abierta</td><td class="">J = Σ l·t³/3 ;  τ = T·t/J (superficie de la chapa)</td><td class="">Compendio cap. 10, Anexo caso 7</td><td class="">perfiles abiertos</td></tr>
+<tr><td class="">Torsión efectiva y suma de tensiones</td><td class="">T<sub>SV</sub> = T − (y<sub>s</sub>·V<sub>z</sub> − z<sub>s</sub>·V<sub>y</sub>);  τ = τ<sub>corte</sub> + τ<sub>torsión</sub> en módulo, tangente a la línea media</td><td class="">[propio]: equilibrio de momentos de las tensiones respecto del baricentro = T del solver; suma en módulo = envolvente conservadora; se desprecia el alabeo impedido</td><td class="">perfiles abiertos con corte fuera del centro de corte</td></tr>
+<tr><td class="">Puntos evaluados</td><td class="">sobre la línea media (tensión normal con coordenadas de línea media, no de la fibra extrema: diferencia ≈ t/2 sobre c)</td><td class="">[propio]</td><td class="">perfiles abiertos</td></tr>
+<tr><td class="">Tensiones principales</td><td class="">σ<sub>1,3</sub> = (σ<sub>x</sub> ± √(σ<sub>x</sub>² + 4τ²))/2;  σ<sub>2</sub> = 0;  τ² = τ<sub>xy</sub>² + τ<sub>xz</sub>²</td><td class="">Gere 7ª ed., §7.3 (tensiones principales, estado plano)</td><td class="">todos los puntos</td></tr>
+<tr><td class="">Von Mises</td><td class="">σ<sub>eq</sub> = √(σ<sub>x</sub>² + 3τ²);  CS = f<sub>y</sub>/σ<sub>eq</sub></td><td class="">Compendio cap. 2</td><td class="">materiales dúctiles</td></tr>
+<tr><td class="">Tresca</td><td class="">σ<sub>eq</sub> = σ<sub>1</sub> − σ<sub>3</sub> = √(σ<sub>x</sub>² + 4τ²);  CS = f<sub>y</sub>/σ<sub>eq</sub></td><td class="">Compendio cap. 2</td><td class="">materiales dúctiles</td></tr>
+<tr><td class="">Rankine</td><td class="">σ<sub>eq</sub> = máx(σ<sub>1</sub>, |σ<sub>3</sub>|);  CS = mín(σ<sub>ut</sub>/σ<sub>1</sub>, σ<sub>uc</sub>/|σ<sub>3</sub>|)</td><td class="">Compendio cap. 2</td><td class="">materiales frágiles</td></tr>
+<tr><td class="">Mohr</td><td class="">σ* = σ<sub>1</sub> + α|σ<sub>3</sub>|, α = σ<sub>ut</sub>/σ<sub>uc</sub>;  CS = σ<sub>ut</sub>/σ*</td><td class="">Compendio cap. 2, (64)-(66)</td><td class="">dúctil con |σ<sub>c</sub>| > σ<sub>t</sub></td></tr>
+<tr><td class="">Mohr modificado</td><td class="">σ* = máx{σ<sub>1</sub>; α|σ<sub>3</sub>| + (1 − α)σ<sub>1</sub>};  CS = σ<sub>ut</sub>/σ*</td><td class="">Compendio cap. 2, (70)-(73)</td><td class="">frágil con |σ<sub>c</sub>| > σ<sub>t</sub></td></tr>
+<tr><td class="">Utilización (mapa y valor al pasar el mouse)</td><td class="">u = σ<sub>eq</sub>/f<sub>y</sub> en Von Mises y Tresca;  u = 1/CS en las demás teorías;  u = 1 es la fluencia (no es un admisible).  Si el material tiene σ<sub>adm</sub>, el recuadro muestra además σ<sub>eq</sub>/σ<sub>adm</sub> (igual que en los programas planos)</td><td class="">[propio] definición del programa (el CS de cada teoría es el del libro)</td><td class="">visor 3D, modo Utilización</td></tr>
+<tr><td class="">Material de la biblioteca (lib)</td><td class="">E, G, nu, f<sub>y</sub>, σ<sub>ut</sub> y ρ se toman de la ficha del material, convertidos a las unidades del modelo; lo escrito a mano en MATERIALES manda; un dato que la ficha no trae queda vacío</td><td class="">ficha del material (valores típicos, no garantizados); ver Memoria de la biblioteca</td><td class="">columna lib de MATERIALES</td></tr>
+<tr><td class="">Perfil de la biblioteca (tipo perfil, lib en SECCIONES)</td><td class="">A = A<sub>g</sub>, I<sub>y</sub> = I<sub>x</sub> del catálogo (eje fuerte, altura d sobre z), I<sub>z</sub> = I<sub>y</sub> del catálogo, J = J, c<sub>z</sub> = d/2 y c<sub>y</sub> = b/2 (te: la fibra más lejana; canal: máx(e, b − e)), W<sub>t</sub> = C (solo tubos); convertidos de cm a la unidad del modelo; lo escrito a mano manda; un dato que la tabla no trae queda vacío.  En ángulos se usan los ejes paralelos a las alas (aviso: no hay flexión asimétrica) [propio]</td><td class="">Tablas de perfiles laminados y tubos, Reglamento CIRSOC 301-EL / 302-EL (valores tal cual figuran); ver Memoria de la biblioteca, sección 7</td><td class="">columna lib de SECCIONES (tipo perfil)</td></tr>
+<tr><td class="">Pandeo de Euler</td><td class="">P<sub>c</sub> = π²·E·I/(K·L)², K = 1 (art-art), 2 (emp-lib), 1/√2 (emp-art), 1/2 (emp-emp);  I = menor de I<sub>y</sub> e I<sub>z</sub>;  CS = P<sub>c</sub>/|N<sub>min</sub>| en barras comprimidas</td><td class="">tabla de la cátedra (Compendio): π²EI/L², 2π²EI/L², 4π²EI/L², π²EI/(4L²).  La condición de extremos de cada barra la elige el diseñador (columna <code>pandeo</code>)*; usar el eje débil es el criterio del programa [propio]</td><td class="">barras comprimidas</td></tr>
+<tr><td class="">Material de la biblioteca de electrodos (lib en ELECTRODOS)</td><td class="">τ<sub>adm</sub>, S<sub>ut</sub> y S<sub>y</sub> del electrodo se leen de 006_Biblioteca/electrodos.csv (E60 … E120 de Shigley y los que se carguen); lo escrito a mano manda</td><td class="">Shigley 2024, Tabla 9-3 (S<sub>ut</sub>, S<sub>y</sub>) y Tabla 9-6 cuadro A (τ<sub>adm</sub>)</td><td class="">bloque SOLDADURAS</td></tr>
+<tr><td class="">Fluencia del metal base (lib en SOLDADURAS)</td><td class="">sy_base = f<sub>y</sub> del material N de la biblioteca de materiales (convertido a las unidades del modelo); lo escrito a mano manda</td><td class="">ficha del material (valores típicos, no garantizados)</td><td class="">bloque SOLDADURAS</td></tr>
+<tr><td class="">Escala de los diagramas</td><td class=""><code>escala_diagramas</code> = barra (defecto) | global; casilla «escala única» en el visor</td><td class="">[propio] criterio del programa</td><td class="">visor 3D</td></tr>
+</tbody></table>
+<p class="nota">Lo marcado <b>[propio]</b> no está en los libros cargados: es una decisión o extensión de este programa y debe verificarse.</p><div class="boton-imprimir no-print"><button onclick="window.print()">Imprimir</button></div></div></td></tr></tbody><tfoot><tr><td><div class="esp"></div></td></tr></tfoot></table></body></html>

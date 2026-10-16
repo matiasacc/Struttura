@@ -1,0 +1,18 @@
+EJEMPLO 14 - Verificación a mano (no la usa el programa; es solo para contrastar).  Unidades N, mm.
+Datos: E = 210000 MPa, I = 1.93333e+07 mm4 (la del programa para el doble T), h = 4000, L = 6000, k = (Ib/L)/(Ic/h) = 0.6667.
+Se desprecian las deformaciones axiales; el programa sí las incluye (de ahí las diferencias de décimas de %).
+
+CASO Q (carga distribuida w = 10 N/mm en la viga; por simetría no hay desplazamiento horizontal)
+  Distribución de momentos: rigidez de la columna Kc = 4EI/h; de la viga (con simetría) Kb = 2EI/L.
+  Momento de empotramiento de la viga: wL²/12 = 3e+07 N·mm.
+  Momento en el extremo de la viga y en el tope de la columna = FEM·Kc/(Kc+Kb) = 2.25e+07 N·mm.
+  Momento en la base de la columna = la mitad (factor de transporte 1/2) = 1.125e+07 N·mm.
+  Programa: tope 2.24824e+07, base 1.1206e+07 N·mm.   Diferencias: 0.08 % y 0.39 %.
+
+CASO V (fuerza horizontal H = 10000 N a la altura de la viga; reparto antisimétrico)
+  Pendiente-deflexión (base empotrada, giro del nudo θ, ψ = Δ/h):  M_base = 2EI/h·(θ − 3ψ);  M_tope = 2EI/h·(2θ − 3ψ);
+  viga (giro antisimétrico): M = 6EI·θ/L.   Equilibrio del nudo → θ = 3ψ/(2+3k).
+  Corte por columna = H/2 = (6EI/h²)·ψ·(1+6k)/(2+3k)  →  ψ = 0.00262726,  desplazamiento horizontal Δ = ψ·h = 10.509 mm.
+  M_base = 1.2e+07 N·mm,  M_tope = 8e+06 N·mm.
+  Programa: Δ = 10.5469 mm, M_base = 1.20314e+07, M_tope = 8.00515e+06 N·mm (columna C1).
+  Diferencias: Δ 0.36 %,  M_base 0.26 %,  M_tope 0.06 %.

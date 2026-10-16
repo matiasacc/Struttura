@@ -1,0 +1,17 @@
+# Ejemplo 9-1 de Shigley (ed. 2024, p. 506-508): placa soldada a un perfil con 3 filetes de 6 mm (una C: vertical d = 190, dos horizontales b = 56).
+# Se analiza una sola placa: V = 25 kN a 100 mm del cordón vertical (a 110,4 mm del baricentro).
+# Resultados del libro: A = 1280 mm², τ' = 19,5 MPa, x̄ = 10,4 mm, J = 7,07·10⁶ mm⁴, M = 2760 N·m, τ máx = 43,9 MPa en C y D (extremos del cordón vertical).
+# Origen de la disposición C: punto medio del cordón vertical; los horizontales salen hacia +y.  La carga se da con su punto de aplicación (yp, zp) y el programa calcula T.
+PROYECTO
+proyecto;Shigley ej 9-1 fitting en C
+unidad_fuerza;N
+unidad_longitud;mm
+tipo;soldadura
+
+SOLDADURAS
+id;disposicion;b;d;electrodo;w
+fitting;C;56;190;E70;6
+
+CARGAS
+soldadura;caso;N;Vy;Vz;T;My;Mz;yp;zp
+fitting;placa 25 kN;0;0;-25000;0;0;0;-100;0

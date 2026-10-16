@@ -1,0 +1,103 @@
+<!DOCTYPE html><html lang='es'><head><meta charset='utf-8'><title>Ejercicio 1 - Método de las fuerzas</title><style>
+@page { size: A4; margin: 0; }
+html, body { margin: 0; padding: 0; background: #fff; }
+body { font-family: "Times New Roman", "Liberation Serif", Georgia, serif; font-size: 11pt;
+       color: #000; line-height: 1.35; }
+table.hoja { width: 100%; border-collapse: collapse; table-layout: fixed; }
+table.hoja > thead > tr > td, table.hoja > tbody > tr > td, table.hoja > tfoot > tr > td
+   { padding: 0; border: 0; text-align: left; vertical-align: top; }
+.esp { height: 14mm; }
+.contenido { max-width: 186mm; margin: 0 auto; padding: 0 6mm; }
+.contenido h1 { font-size: 18pt; text-align: center; margin: 0 0 4pt; }
+.sub { text-align: center; font-size: 10.5pt; margin-bottom: 10pt; border-bottom: 2px solid #000; padding-bottom: 6pt; }
+.contenido h2 { font-size: 14pt; border-bottom: 1px solid #000; margin: 22pt 0 6pt; padding-bottom: 2pt; }
+.contenido h3 { font-size: 12pt; margin: 14pt 0 4pt; }
+.contenido h4 { font-size: 11pt; font-style: italic; margin: 10pt 0 2pt; }
+.contenido h2, .contenido h3, .contenido h4 { page-break-after: avoid; break-after: avoid; }
+.contenido table { border-collapse: collapse; margin: 4pt 0 10pt; font-size: 9.5pt; }
+.contenido th, .contenido td { padding: 1.5pt 9pt; text-align: center; }
+.contenido th { border-top: 1.5px solid #000; border-bottom: 1px solid #000; font-weight: bold; }
+.contenido tr:last-child td { border-bottom: 1.5px solid #000; }
+.contenido td.n { text-align: right; font-variant-numeric: tabular-nums; }
+.contenido td.t { text-align: left; }
+.contenido table.datos td:first-child { text-align: left; font-weight: bold; }
+.contenido table.datos td:nth-child(2) { text-align: left; }
+.contenido table.funciones { font-size: 9pt; }
+.contenido table.funciones td { text-align: left; white-space: nowrap; }
+.contenido table.matriz { font-size: 7pt; }
+.contenido table.matriz th, .contenido table.matriz td { padding: 1pt 4pt; }
+.contenido figure { margin: 8pt 0 12pt; page-break-inside: avoid; text-align: center; }
+.contenido figure svg { max-width: 100%; height: auto; }
+.contenido figcaption { font-size: 9.5pt; font-style: italic; }
+.nota { font-size: 9.5pt; margin: 2pt 0 8pt; }
+.ok { font-weight: bold; }
+.aviso { border: 1px solid #000; padding: 4pt 8pt; font-size: 10pt; margin: 6pt 0; }
+ul.conv { margin: 2pt 0 8pt 16pt; padding: 0; font-size: 10.5pt; }
+pre.codigo { font-family: "Courier New", "Liberation Mono", monospace; font-size: 8.5pt; border: 1px solid #000;
+             padding: 5pt 8pt; overflow-x: auto; page-break-inside: avoid; line-height: 1.25; }
+code { font-family: "Courier New", "Liberation Mono", monospace; font-size: 9.5pt; }
+.caso { page-break-before: always; }
+.scroll { overflow-x: auto; }
+.boton-imprimir { text-align: center; margin: 22pt 0 10pt; }
+.boton-imprimir button { font-family: inherit; font-size: 11pt; padding: 5pt 22pt; border: 1px solid #000;
+                         background: #f2f2f2; cursor: pointer; }
+.boton-imprimir button:hover { background: #e2e2e2; }
+@media print { .contenido { max-width: none; padding: 0 14mm; } .no-print { display: none !important; } }
+
+.visor { margin: 8pt 0 12pt; page-break-inside: avoid; break-inside: avoid; }
+.visor .ctrl { font-size: 9.5pt; margin: 0 0 4pt; text-align: left; }
+.visor .ctrl button, .visor .ctrl select { font-family: inherit; font-size: 9.5pt; padding: 1pt 8pt;
+      border: 1px solid #000; background: #f2f2f2; cursor: pointer; margin-right: 3pt; }
+.visor .ctrl button:hover { background: #e2e2e2; }
+.visor .ctrl label { margin-right: 9pt; white-space: nowrap; }
+.visor svg.lienzo { width: 100%; height: auto; border: 1px solid #000; background: #fff; cursor: grab;
+      touch-action: none; user-select: none; -webkit-user-select: none; }
+.visor svg.lienzo:active { cursor: grabbing; }
+.visor .pie { font-size: 9.5pt; font-style: italic; text-align: center; }
+@media print { .visor .ctrl { display: none !important; } .visor svg.lienzo { border: 0; } }
+
+.visor .ayuda { font-size: 8.5pt; color: #444; text-align: center; margin: 2pt 0 0; }
+.visor .ctrl .sep { display: inline-block; width: 10pt; }
+.visor .ctrl select:disabled { opacity: .45; }
+@media print { .visor .ayuda { display: none !important; } }
+</style></head><body><table class="hoja"><thead><tr><td><div class="esp"></div></td></tr></thead><tbody><tr><td><div class="contenido"><h1>Ejercicio 1 · Método de las fuerzas</h1><div class='sub'>Resuelto con Struttura 1.1.4 (emparrillado, método de rigidez)</div>
+<h2>Modelo</h2>
+<ul>
+<li>Barra en el plano horizontal xy, L = 1000 mm, α = 30° con el eje x: nudo 1 en (866,03; 0), nudo 2 en (0; 500). z hacia arriba.</li>
+<li>q = 2 N/mm hacia −z sobre toda la barra (2000 N en total). E = 210 GPa, G = 80 GPa, I = 128720 mm⁴, J = 192000 mm⁴.</li>
+<li>Nudo 1: giro alrededor de y impedido (R<sub>y</sub><sup>1</sup>) y resorte vertical k = 5 N/mm. Nudo 2: u<sub>z</sub> impedido (R<sub>z</sub><sup>2</sup>) y giro alrededor de x impedido (R<sub>x</sub><sup>2</sup>).</li>
+<li><b>Interpretación</b>: R<sub>x</sub><sup>2</sup> se tomó como momento alrededor de x (con los datos del enunciado cierran el equilibrio de fuerzas y de momentos alrededor de y). El eje x apunta hacia el lector, como en el dibujo.</li>
+</ul>
+<h2>1. Reacción R<sub>x</sub><sup>2</sup> e hiperestaticidad</h2>
+<p>Equilibrio de momentos alrededor de x con las reacciones del enunciado:  ΣM<sub>x</sub> = −2000·250 + 1909,77·500 + R<sub>x</sub><sup>2</sup> = 0 ⇒ <b>R<sub>x</sub><sup>2</sup> = -454885 N·mm</b> (sentido −x).</p>
+<p>Incógnitas de reacción: R<sub>y</sub><sup>1</sup>, fuerza del resorte, R<sub>z</sub><sup>2</sup>, R<sub>x</sub><sup>2</sup> = 4; ecuaciones de equilibrio en el espacio del emparrillado (ΣF<sub>z</sub>, ΣM<sub>x</sub>, ΣM<sub>y</sub>) = 3 ⇒ <b>grado de hiperestaticidad = 1</b> (el resorte cuenta como apoyo).</p>
+<p>Con el programa (estructura completa): R<sub>x</sub><sup>2</sup> = -456013 N·mm, R<sub>z</sub><sup>2</sup> = 1912,03 N, R<sub>y</sub><sup>1</sup> = -789837 N·mm, fuerza del resorte = 87,97 N (u<sub>z</sub><sup>1</sup> = -17,595 mm).</p>
+<h2>2. Planteo</h2>
+<ul>
+<li><b>Sistema isostático fundamental (SIF)</b>: la estructura sin R<sub>x</sub><sup>2</sup> (nudo 2 con giro alrededor de x liberado); queda con u<sub>z</sub> en el nudo 2, giro alrededor de y y resorte en el nudo 1.</li>
+<li><b>Sistema isostático equivalente (SIE)</b>: el SIF con q y con X<sub>1</sub> = R<sub>x</sub><sup>2</sup> aplicado como momento en el nudo 2.</li>
+<li><b>Estado 0</b>: SIF con q (X<sub>1</sub> = 0). <b>Estado 1</b>: SIF sin q, con X<sub>1</sub> = 1 N·mm en el nudo 2.</li>
+<li>Compatibilidad: φ<sub>x</sub><sup>2</sup> = 0 ⇒ δ<sub>10</sub> + X<sub>1</sub>·δ<sub>11</sub> = 0.</li>
+</ul>
+<h2>3. Diagramas de los estados y coeficientes</h2>
+<table class='dat'><tr><th></th><th>Estado 0 (q)</th><th>Estado 1 (X<sub>1</sub> = 1)</th></tr>
+<tr><td>Cortante V</td><td>1000 N en el nudo 1, −1000 N en el nudo 2 (lineal)</td><td>0,002 (constante)</td></tr>
+<tr><td>Torsor T</td><td>0</td><td>−0,8660 (constante)</td></tr>
+<tr><td>Flector M</td><td>0 en ambos nudos, máximo 250000 N·mm a 500 mm del nudo 1 (parábola)</td><td>−1,5 en el nudo 1, 0,5 en el nudo 2 (lineal)</td></tr>
+<tr><td>Reacciones</td><td>resorte 1000 N, R<sub>z</sub><sup>2</sup> = 1000 N</td><td>R<sub>y</sub><sup>1</sup> = 1,732; R<sub>z</sub><sup>2</sup> = −0,002</td></tr></table>
+<p>(Signos según la convención del informe del programa; los diagramas completos están en los informes de cada estado.)</p>
+<p><b>δ<sub>10</sub> = φ<sub>x</sub><sup>2</sup> del estado 0 = 0,396917 rad</b> (incluye la energía del resorte).<br>
+<b>δ<sub>11</sub> = φ<sub>x</sub><sup>2</sup> del estado 1 = 8,70408e-07 rad/(N·mm)</b>.<br>
+X<sub>1</sub> = −δ<sub>10</sub>/δ<sub>11</sub> = <b>-456013 N·mm</b>, igual al R<sub>x</sub><sup>2</sup> de la estructura completa (-456013).</p>
+<h2>4. Giro φ<sub>x</sub><sup>1</sup></h2>
+<p>φ<sub>x</sub><sup>1</sup> = [φ<sub>x</sub><sup>1</sup>]<sub>0</sub> + X<sub>1</sub>[φ<sub>x</sub><sup>1</sup>]<sub>1</sub> = 0,393834 + (-456013)·(8,30829e-07) = <b>0,0149659 rad</b> (0,8575°).<br>
+Resolviendo la estructura completa directamente da 0,0149659 rad: coincide.</p>
+<h2>5. ¿El plano xz es de simetría?</h2>
+<p><b>No.</b> La barra va del nudo 1 (que está sobre el plano xz) al nudo 2 (y = 500 mm) y queda toda de un solo lado del plano. Para que fuera plano de simetría tendría que existir la barra espejada hacia y &lt; 0 con sus apoyos y cargas.</p>
+<h2>Diferencia con las reacciones del enunciado</h2>
+<table class='dat'><tr><th></th><th>Enunciado</th><th>Programa</th></tr>
+<tr><td>R<sub>z</sub><sup>2</sup> [N]</td><td>1909,77</td><td>1912,03</td></tr>
+<tr><td>R<sub>y</sub><sup>1</sup> [N·mm]</td><td>787887</td><td>789837</td></tr>
+<tr><td>Fuerza del resorte [N]</td><td>90,22</td><td>87,97</td></tr></table>
+<p>Las reacciones del enunciado cumplen el equilibrio entre sí, pero el programa da un resorte ≈2,5 % menor. Verifiqué el resultado con un cálculo independiente (Castigliano con flexión y torsión, sin el programa): resorte 88,0 N. Con los datos dados (E, G, I, J, k, L, α) no logré reproducir 90,22 N; no sé de dónde sale la diferencia (puede ser otro dato o otra formulación en la solución original). Los resultados de arriba son los del programa.</p>
+<p style='font-size:9pt'>Archivos: ejercicio1_estructura_real.csv, ejercicio1_estado0_SIF.csv, ejercicio1_estado1_X1.csv y la carpeta _salida de cada uno (informe.html, matrices, reacciones, esfuerzos).</p><div class="boton-imprimir no-print"><button onclick="window.print()">Imprimir</button><div class="nota">Si el navegador agrega fecha o título en los bordes, desactivar "Encabezados y pies de página" en el diálogo de impresión.</div></div></div></td></tr></tbody><tfoot><tr><td><div class="esp"></div></td></tr></tfoot></table></body></html>

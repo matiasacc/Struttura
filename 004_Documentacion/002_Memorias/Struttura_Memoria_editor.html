@@ -1,0 +1,117 @@
+<!DOCTYPE html><html lang='es'><head><meta charset='utf-8'><title>Struttura — Memoria del editor visual</title><style>
+@page { size: A4; margin: 0; }
+html, body { margin: 0; padding: 0; background: #fff; }
+body { font-family: "Times New Roman", "Liberation Serif", Georgia, serif; font-size: 11pt;
+       color: #000; line-height: 1.35; }
+table.hoja { width: 100%; border-collapse: collapse; table-layout: fixed; }
+table.hoja > thead > tr > td, table.hoja > tbody > tr > td, table.hoja > tfoot > tr > td
+   { padding: 0; border: 0; text-align: left; vertical-align: top; }
+.esp { height: 14mm; }
+.contenido { max-width: 186mm; margin: 0 auto; padding: 0 6mm; }
+.contenido h1 { font-size: 18pt; text-align: center; margin: 0 0 4pt; }
+.sub { text-align: center; font-size: 10.5pt; margin-bottom: 10pt; border-bottom: 2px solid #000; padding-bottom: 6pt; }
+.contenido h2 { font-size: 14pt; border-bottom: 1px solid #000; margin: 22pt 0 6pt; padding-bottom: 2pt; }
+.contenido h3 { font-size: 12pt; margin: 14pt 0 4pt; }
+.contenido h4 { font-size: 11pt; font-style: italic; margin: 10pt 0 2pt; }
+.contenido h2, .contenido h3, .contenido h4 { page-break-after: avoid; break-after: avoid; }
+.contenido table { border-collapse: collapse; margin: 4pt 0 10pt; font-size: 9.5pt; }
+.contenido th, .contenido td { padding: 1.5pt 9pt; text-align: center; }
+.contenido th { border-top: 1.5px solid #000; border-bottom: 1px solid #000; font-weight: bold; }
+.contenido tr:last-child td { border-bottom: 1.5px solid #000; }
+.contenido td.n { text-align: right; font-variant-numeric: tabular-nums; }
+.contenido td.t { text-align: left; }
+.contenido table.datos td:first-child { text-align: left; font-weight: bold; }
+.contenido table.datos td:nth-child(2) { text-align: left; }
+.contenido table.funciones { font-size: 9pt; }
+.contenido table.funciones td { text-align: left; white-space: nowrap; }
+.contenido table.matriz { font-size: 7pt; }
+.contenido table.matriz th, .contenido table.matriz td { padding: 1pt 4pt; }
+.contenido figure { margin: 8pt 0 12pt; page-break-inside: avoid; text-align: center; }
+.contenido figure svg { max-width: 100%; height: auto; }
+.contenido figcaption { font-size: 9.5pt; font-style: italic; }
+.nota { font-size: 9.5pt; margin: 2pt 0 8pt; }
+.ok { font-weight: bold; }
+.aviso { border: 1px solid #000; padding: 4pt 8pt; font-size: 10pt; margin: 6pt 0; }
+ul.conv { margin: 2pt 0 8pt 16pt; padding: 0; font-size: 10.5pt; }
+pre.codigo { font-family: "Courier New", "Liberation Mono", monospace; font-size: 8.5pt; border: 1px solid #000;
+             padding: 5pt 8pt; overflow-x: auto; page-break-inside: avoid; line-height: 1.25; }
+code { font-family: "Courier New", "Liberation Mono", monospace; font-size: 9.5pt; }
+.caso { page-break-before: always; }
+.scroll { overflow-x: auto; }
+.boton-imprimir { text-align: center; margin: 22pt 0 10pt; }
+.boton-imprimir button { font-family: inherit; font-size: 11pt; padding: 5pt 22pt; border: 1px solid #000;
+                         background: #f2f2f2; cursor: pointer; }
+.boton-imprimir button:hover { background: #e2e2e2; }
+@media print { .contenido { max-width: none; padding: 0 14mm; } .no-print { display: none !important; } }
+
+.visor { margin: 8pt 0 12pt; page-break-inside: avoid; break-inside: avoid; }
+.visor .ctrl { font-size: 9.5pt; margin: 0 0 4pt; text-align: left; }
+.visor .ctrl button, .visor .ctrl select { font-family: inherit; font-size: 9.5pt; padding: 1pt 8pt;
+      border: 1px solid #000; background: #f2f2f2; cursor: pointer; margin-right: 3pt; }
+.visor .ctrl button:hover { background: #e2e2e2; }
+.visor .ctrl label { margin-right: 9pt; white-space: nowrap; }
+.visor svg.lienzo { width: 100%; height: auto; border: 1px solid #000; background: #fff; cursor: grab;
+      touch-action: none; user-select: none; -webkit-user-select: none; }
+.visor svg.lienzo:active { cursor: grabbing; }
+.visor .pie { font-size: 9.5pt; font-style: italic; text-align: center; }
+@media print { .visor .ctrl { display: none !important; } .visor svg.lienzo { border: 0; } }
+
+.visor { position: relative; }
+.visor .ayuda { font-size: 8.5pt; color: #444; text-align: center; margin: 2pt 0 0; }
+.visor .tip { position: absolute; display: none; pointer-events: none; z-index: 5; white-space: nowrap;
+      background: rgba(255,255,255,.97); border: 1px solid #9aa5a3; border-radius: 3px; padding: 3px 8px;
+      font: 9.5pt/1.4 sans-serif; color: #222; text-align: left; box-shadow: 0 1px 5px rgba(0,0,0,.2); }
+.visor .tip .lib { color: #777; }
+.visor .ctrl .sep { display: inline-block; width: 10pt; }
+.visor .ctrl select:disabled { opacity: .45; }
+@media print { .visor .ayuda, .visor .tip { display: none !important; } }
+</style></head><body><table class="hoja"><thead><tr><td><div class="esp"></div></td></tr></thead><tbody><tr><td><div class="contenido"><h1>Memoria del editor visual</h1><div class='sub'>Cómo cargar los modelos sin escribir el CSV a mano (Struttura v1.1.11)</div>
+<h2>0. Mapa de uso</h2><p>De arriba hacia abajo.  Amarillo: lo que cargás; verde: la comprobación; rojizo: lo que se obtiene.</p><svg viewBox="0 0 1000 640" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,Helvetica,Arial,sans-serif" role="img" style="max-width:1000px;background:#fff;border:1px solid #d5dde0;border-radius:10px"><defs><marker id="p" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#6b7c85"/></marker></defs><rect x="300" y="10" width="400" height="46" rx="9" fill="#dfe9ec" stroke="#5d8794" stroke-width="1.4"/><text x="312" y="31" font-size="13.5" font-weight="700" fill="#22313a">Cómo se usa: editor visual de modelos</text><text x="312" y="52" font-size="12" fill="#33444e">python struttura.py --editor [modelo.csv]</text><rect x="20" y="90" width="300" height="110" rx="9" fill="#f6f1e4" stroke="#b39b5a" stroke-width="1.4"/><text x="32" y="111" font-size="13.5" font-weight="700" fill="#22313a">1 · Abrir o crear</text><text x="32" y="132" font-size="12" fill="#33444e">Nuevo ▾: elegís el tipo de estructura</text><text x="32" y="149" font-size="12" fill="#33444e">Abrir: cualquier CSV de Struttura</text><text x="32" y="166" font-size="12" fill="#33444e">(sus comentarios y columnas extra se conservan)</text><rect x="350" y="90" width="300" height="110" rx="9" fill="#f6f1e4" stroke="#b39b5a" stroke-width="1.4"/><text x="362" y="111" font-size="13.5" font-weight="700" fill="#22313a">2 · Cargar en orden</text><text x="362" y="132" font-size="12" fill="#33444e">Barra de pasos: Proyecto, Nodos, Materiales,</text><text x="362" y="149" font-size="12" fill="#33444e">Secciones, Barras, Apoyos, Cargas...</text><text x="362" y="166" font-size="12" fill="#33444e">Cada columna tiene su ayuda y sus opciones</text><rect x="680" y="90" width="300" height="110" rx="9" fill="#f6f1e4" stroke="#b39b5a" stroke-width="1.4"/><text x="692" y="111" font-size="13.5" font-weight="700" fill="#22313a">3 · Dibujar</text><text x="692" y="132" font-size="12" fill="#33444e">Herramientas: nodo, barra, apoyo, carga,</text><text x="692" y="149" font-size="12" fill="#33444e">carga en tramo, borrar; arrastrar nodos</text><text x="692" y="166" font-size="12" fill="#33444e">El dibujo y las tablas son el mismo modelo</text><line x1="500" y1="56" x2="170" y2="90" stroke="#6b7c85" stroke-width="1.6" marker-end="url(#p)"/><line x1="500" y1="56" x2="500" y2="90" stroke="#6b7c85" stroke-width="1.6" marker-end="url(#p)"/><line x1="500" y1="56" x2="830" y2="90" stroke="#6b7c85" stroke-width="1.6" marker-end="url(#p)"/><rect x="20" y="250" width="960" height="80" rx="9" fill="#e6f0e6" stroke="#6f9a72" stroke-width="1.4"/><text x="32" y="271" font-size="13.5" font-weight="700" fill="#22313a">Revisar (se hace solo al editar): carga el modelo con el programa real</text><text x="32" y="292" font-size="12" fill="#33444e">Marca el bloque y la fila con error y muestra los avisos; mientras haya errores no se puede calcular</text><line x1="500" y1="200" x2="500" y2="250" stroke="#6b7c85" stroke-width="1.6" marker-end="url(#p)"/><rect x="20" y="380" width="470" height="100" rx="9" fill="#f1f3f4" stroke="#8a979c" stroke-width="1.4"/><text x="32" y="401" font-size="13.5" font-weight="700" fill="#22313a">4 · Guardar / Guardar como…</text><text x="32" y="422" font-size="12" fill="#33444e">Escribe el CSV (separador ;) en la carpeta que elijas</text><text x="32" y="439" font-size="12" fill="#33444e">Ctrl+S guarda · Ctrl+Mayús+S guarda como</text><text x="32" y="456" font-size="12" fill="#33444e">Deshacer / rehacer: Ctrl+Z / Ctrl+Y</text><rect x="510" y="380" width="470" height="100" rx="9" fill="#f2e6e0" stroke="#b3745a" stroke-width="1.4"/><text x="522" y="401" font-size="13.5" font-weight="700" fill="#22313a">5 · Calcular (F5)</text><text x="522" y="422" font-size="12" fill="#33444e">Guarda y corre el mismo cálculo que la línea de comandos</text><text x="522" y="439" font-size="12" fill="#33444e">El informe.html se abre en el navegador</text><text x="522" y="456" font-size="12" fill="#33444e">Carpeta &lt;modelo&gt;_salida/ igual que siempre</text><line x1="300" y1="330" x2="255" y2="380" stroke="#6b7c85" stroke-width="1.6" marker-end="url(#p)"/><line x1="700" y1="330" x2="745" y2="380" stroke="#6b7c85" stroke-width="1.6" marker-end="url(#p)"/><rect x="20" y="530" width="960" height="70" rx="9" fill="#f1f3f4" stroke="#8a979c" stroke-width="1.4"/><text x="32" y="551" font-size="13.5" font-weight="700" fill="#22313a">El CSV sigue siendo la fuente de verdad</text><text x="32" y="572" font-size="12" fill="#33444e">Se puede seguir editando a mano o desde el editor, indistintamente; el editor no cambia los resultados</text></svg>
+<h2>1. Qué es</h2><p>Una página que corre en tu computadora (servidor local en <code>127.0.0.1</code>, puerto al azar, con una clave por sesión) y se abre en el navegador.  No es un CAD: es el mismo archivo CSV de siempre con tablas guiadas y un dibujo del modelo.  <b>No agrega ni cambia ningún cálculo</b>: Calcular llama al mismo despachador que la línea de comandos.  No usa internet ni librerías externas.</p>
+<h2>2. Qué se puede cargar</h2><p>Todo lo que admite el CSV.  Hay un esquema por tipo con cada bloque y cada columna (tipo de dato, opciones, ayuda), y un test que lo compara contra los cargadores del programa: si el cargador acepta una columna, el editor tiene dónde ponerla.</p>
+<table class="">
+<thead><tr><th>Tipo</th><th>Clave</th><th>Vista</th><th>Bloques</th><th>Columnas</th></tr></thead><tbody>
+<tr><td class="">Pórtico espacial (3D)</td><td class="">portico3d</td><td class="">dibujo 3D (se gira)</td><td class="">14</td><td class="">124</td></tr>
+<tr><td class="">Pórtico plano</td><td class="">portico</td><td class="">dibujo 2D (vista fija)</td><td class="">15</td><td class="">107</td></tr>
+<tr><td class="">Emparrillado plano</td><td class="">emparrillado</td><td class="">dibujo 2D (vista fija)</td><td class="">15</td><td class="">108</td></tr>
+<tr><td class="">Reticulado plano</td><td class="">reticulado</td><td class="">dibujo 2D (vista fija)</td><td class="">13</td><td class="">71</td></tr>
+<tr><td class="">Soldaduras (modo rápido)</td><td class="">soldadura</td><td class="">tablas (sin dibujo)</td><td class="">4</td><td class="">34</td></tr>
+</tbody></table>
+<h2>3. Dibujo</h2><table class="">
+<thead><tr><th>Herramienta</th><th>Atajo</th><th>Qué hace</th></tr></thead><tbody>
+<tr><td class="">Seleccionar</td><td class="">V</td><td class="">elige nodo o barra (se edita en el inspector); arrastrar un nodo lo mueve</td></tr>
+<tr><td class="">Nodo</td><td class="">N</td><td class="">crea un nodo en la posición del mouse (con paso e imán a nodos)</td></tr>
+<tr><td class="">Barra</td><td class="">B</td><td class="">clic en un nodo y luego en otro; si no hay nodo bajo el mouse lo crea</td></tr>
+<tr><td class="">Apoyo</td><td class="">A</td><td class="">pone el tipo elegido (empotrado, articulado, etc.) o lo quita</td></tr>
+<tr><td class="">Carga</td><td class="">C</td><td class="">carga nodal con el caso y los valores elegidos</td></tr>
+<tr><td class="">Carga en tramo</td><td class="">L</td><td class="">carga en una barra (tipo, valor, posición según el tipo)</td></tr>
+<tr><td class="">Borrar</td><td class="">X / Supr</td><td class="">borra el elemento y lo que dependía de él (barras, apoyos, cargas)</td></tr>
+<tr><td class="">Vista</td><td class="">—</td><td class="">Ajustar (doble clic); en 3D: Iso, Planta, Frente, Lado y giro con el mouse</td></tr>
+</tbody></table>
+<p class="nota">En 3D un clic cae en el plano de trabajo (x, y o z = valor) elegido en la barra de herramientas.  Las unidades y los signos son los del modelo: el editor no convierte nada.</p>
+<h2>4. Reglas del archivo</h2><table class="">
+<thead><tr><th>Tema</th><th>Regla</th></tr></thead><tbody>
+<tr><td class="">Fidelidad</td><td class="">al abrir y guardar se conservan comentarios, columnas desconocidas y el orden de bloques; los valores se guardan como texto, tal cual se escribieron</td></tr>
+<tr><td class="">Separador y decimal</td><td class="">se guarda con <code>;</code>; el decimal (coma o punto) es el que ya usa el archivo, y coma si es nuevo</td></tr>
+<tr><td class="">Columnas</td><td class="">se agregan solo las que el cargador exige o las que se usan; las vacías no se completan</td></tr>
+<tr><td class="">Renombrar</td><td class="">cambiar el id de un nodo, material o sección actualiza las barras, apoyos y cargas que lo usan</td></tr>
+<tr><td class="">Revisión</td><td class="">usa el cargador real sobre una copia temporal; señala bloque y fila del error</td></tr>
+<tr><td class="">Modo soldaduras</td><td class="">solo tablas (ELECTRODOS, SOLDADURAS, CARGAS); no tiene estructura para dibujar</td></tr>
+</tbody></table>
+<h2>5. Nombres, desplegables y biblioteca</h2><table class="">
+<thead><tr><th>Tema</th><th>Cómo se ve en el editor</th></tr></thead><tbody>
+<tr><td class="">Nombres</td><td class="">cada columna lleva un nombre claro y su unidad según las unidades del proyecto (por ejemplo «Módulo de elasticidad E [N/mm²]»); el nombre que usa el CSV queda en letra chica debajo</td></tr>
+<tr><td class="">Opciones</td><td class="">las opciones también tienen nombre (por ejemplo «Rectangular hueca» en lugar de <code>rect_hueca</code>); en el archivo se guarda el valor de siempre</td></tr>
+<tr><td class="">Materiales</td><td class="">la primera columna es el <b>material de la biblioteca</b> (desplegable); «+ Agregar material de la biblioteca» agrega la fila lista.  Las celdas vacías muestran en azul el valor de la biblioteca; lo que se escribe a mano manda</td></tr>
+<tr><td class="">Secciones (perfiles)</td><td class="">el tipo <b>Perfil de la biblioteca</b> y la columna «Perfil de la biblioteca» (desplegable agrupado por familia: IPN, IPE, W, UPN, ángulos, tes, tubos…); «+ Agregar perfil de la biblioteca» agrega la sección lista, con el nombre del perfil.  A, I, J… salen en azul en las celdas vacías, en las unidades del modelo; lo escrito a mano manda</td></tr>
+<tr><td class="">Electrodos</td><td class="">igual que los materiales; en SOLDADURAS el electrodo se elige entre los del modelo, la biblioteca y la tabla de Shigley</td></tr>
+<tr><td class="">Referencias</td><td class="">nodo, barra, material, sección y electrodo se eligen de un desplegable con «id: detalle» (coordenadas, nodos de la barra, nombre del material, forma y medidas de la sección)</td></tr>
+<tr><td class="">Secciones</td><td class="">cada forma muestra solo las medidas que usa (tomado de los cargadores); «Mostrar todas las columnas» las muestra todas</td></tr>
+<tr><td class="">Apoyos</td><td class="">cada movimiento es un botón <b>Fijo</b> (vale 0) o <b>Libre</b>; una columna «Tipo de apoyo» completa todo de una vez (Empotrado, Articulado...)</td></tr>
+<tr><td class="">Articulaciones</td><td class="">se eligen por nombre (Rígida, Articulada, Rótula esférica, Libera My...)</td></tr>
+<tr><td class="">Enter</td><td class="">acepta lo escrito; en las tablas pasa a la celda de abajo</td></tr>
+<tr><td class="">Nodos repetidos</td><td class="">no se crean dos nodos en el mismo punto; si el archivo los trae, el estado avisa y «Unir» los junta</td></tr>
+<tr><td class="">Guardar como</td><td class="">comprueba que el archivo quedó escrito, muestra la ruta completa y tiene «Abrir carpeta» y «Copiar ruta»</td></tr>
+</tbody></table>
+<h2>6. Límites</h2><p>En 3D se edita con el plano de trabajo y las tablas; no hay selección por ventana ni copiar/pegar de elementos.  Probado con Chrome (Chromium); en Edge debería funcionar igual.  La comodidad de uso no se pudo evaluar sin una persona usándolo: las correcciones de interfaz se hacen con tu experiencia.  Pendiente por decisión: cargas de temperatura 3D, resortes inclinados, falta de ajuste de resortes (también faltan en el CSV).</p>
+<h2>7. Cómo se verifica</h2><p><code>005_Tests/test_editor.py</code>: esquema contra los cargadores; idas y vueltas del CSV de todos los ejemplos con resultados idénticos; servidor (abrir, revisar, guardar, calcular, clave); y la página con un navegador real: modelos armados con el mouse (pórtico, emparrillado, reticulado, pórtico 3D) dan resultados <b>idénticos byte a byte</b> a los CSV escritos a mano.</p><div class="boton-imprimir no-print"><button onclick="window.print()">Imprimir</button></div></div></td></tr></tbody><tfoot><tr><td><div class="esp"></div></td></tr></tfoot></table></body></html>

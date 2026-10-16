@@ -1,0 +1,37 @@
+# EJEMPLO 13 - Voladizo en L con tubo redondo 63,5 x 3,2 de la biblioteca de perfiles (tablas CIRSOC; SECCIONES: tipo;perfil y lib;N).
+# Completa I, J, A, c y Wt de las tablas, en las unidades del modelo (lo escrito a mano manda).
+# Las líneas que empiezan con # son comentarios. Cada bloque empieza con su título.
+
+PROYECTO
+proyecto;Ejemplo 13 - Voladizo en L con perfil de biblioteca
+autor;
+unidad_fuerza;N
+unidad_longitud;mm
+escala_deformada;auto
+
+NODOS
+id;x;y
+1;0;0
+2;1000;0
+3;1000;800
+
+MATERIALES
+id;E;nu;G;fy;sadm
+ACERO;210000;0,3;;235;156
+
+SECCIONES
+id;tipo;lib
+T1;perfil;602
+
+BARRAS
+id;nodo_i;nodo_j;material;seccion
+1;1;2;ACERO;T1
+2;2;3;ACERO;T1
+
+APOYOS
+nodo;uz;phix;phiy
+1;1;1;1
+
+CARGAS
+caso;nodo;Pz;Mx;My
+P;3;-500;0;0

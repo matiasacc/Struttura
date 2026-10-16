@@ -1,0 +1,66 @@
+# TP6 - Cálculo Estructural I - 2do semestre 2022 (emparrillado con q, gradiente térmico,
+# resorte recto corto, resorte de torsión con eje inclinado 45° y giro prefijado).
+# Ejes GLOBALES = los del enunciado:  x a lo largo de la barra 1-3, y perpendicular (paralelo a la barra 2-3),
+# z hacia el lector.  Origen en el nudo 1.
+#
+# SUPUESTOS (verificar contra el enunciado):
+#  * triángulo con ángulo recto en el nudo 3:  1=(0,0)  3=(L1,0)=(2000,0)  2=(L1,-L2)=(2000,-1500);  barra 1-2 = 2500 mm
+#  * apoyo en 3: solo uz restringido (apoyo simple); el resorte torsor lo frena en giro
+#  * nudo 2: uz libre con resorte Kz; giros restringidos (θy = 0, θx prefijado)
+#  * q hacia abajo (-z) en toda la barra 1-3
+#  * ΔTs = -20 en la cara superior (+z) de la barra 1-2; cara inferior sin cambio
+#  * resorte Kz 5 mm más corto  ->  hay que estirarlo para conectarlo  ->  desajuste e = -5 mm
+#  * Kθ = G·J/L1 con eje horizontal en el dibujo = a 45° de x (entre x e y):  k = 26300*3400000/2000 = 44710000 N·mm/rad
+#  * θx^B = +0,006 rad (en el sentido de +x, como las flechas azules del dibujo)
+
+PROYECTO
+proyecto;TP6 2do Semestre 2022 - Emparrillado
+unidad_fuerza;N
+unidad_longitud;mm
+
+NODOS
+id;x;y
+1;0;0
+2;2000;-1500
+3;2000;0
+
+MATERIALES
+id;E;G;alfa
+M;70000;26300;0,000023
+
+SECCIONES
+id;tipo;I;J;A;c;h
+S;generica;1700000;3400000;1500;50;100
+
+BARRAS
+id;nodo_i;nodo_j;material;seccion
+1;1;2;M;S
+2;1;3;M;S
+3;2;3;M;S
+
+APOYOS
+nodo;uz;phix;phiy
+1;1;1;1
+2;0;1;1
+3;1;0;0
+
+RESORTES
+nodo;kz;kphix;kphiy
+2;5000;;
+
+RESORTES GIRO INCLINADO
+nodo;k;angulo
+3;44710000;45
+
+CARGAS EN BARRAS
+caso;barra;tipo;valor;valor2;a;b
+E;2;q;-20;;;
+E;1;temp;-20;0;;
+
+DESPLAZAMIENTOS PREFIJADOS
+caso;nodo;uz;phix;phiy
+E;2;;0,006;
+
+DESAJUSTE DE RESORTES
+caso;nodo;uz;phix;phiy
+E;2;-5;;

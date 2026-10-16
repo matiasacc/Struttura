@@ -1,0 +1,52 @@
+# Ménsula con tensor: columna empotrada, viga articulada en la columna y colgada de un tensor biarticulado que sube hasta la columna.
+# Muestra (1) articulaciones en barras 3D (columnas art_i / art_j de BARRAS) y (2) peso propio automático (peso_propio + rho).
+# Unidades: N y mm.  Plano de la estructura: XZ (y = 0).  Los nudos 2, 3 y 4 tienen restringido lo que saca la estructura del plano XZ.
+# Lo esperable: en la viga My = 0 en el nudo 2 (articulada); el tensor trabaja solo a axil de tracción (My = Mz = 0 en ambos extremos).
+
+PROYECTO
+proyecto;Ménsula con tensor (articulaciones y peso propio)
+unidad_fuerza;N
+unidad_longitud;mm
+tipo;portico3d
+peso_propio;PP
+gravedad;-z
+
+NODOS
+id;x;y;z
+1;0;0;0
+2;0;0;1000
+4;0;0;2500
+3;1500;0;1000
+
+MATERIALES
+id;E;G;fy;rho
+acero4130;205000;80000;436;7850
+
+SECCIONES
+id;tipo;d;t
+col;tubo;100;6
+viga;tubo;40;3
+tensor;tubo;25;2
+
+BARRAS
+id;nodo_i;nodo_j;material;seccion;art_i;art_j
+col1;1;2;acero4130;col;;
+col2;2;4;acero4130;col;;
+viga;2;3;acero4130;viga;1;
+tensor;4;3;acero4130;tensor;1;1
+
+APOYOS
+nodo;ux;uy;uz;phix;phiy;phiz
+1;1;1;1;1;1;1
+2;0;1;0;1;0;1
+3;0;1;0;1;0;1
+4;0;1;0;1;0;1
+
+CARGAS
+caso;nodo;Fx;Fy;Fz;Mx;My;Mz
+P;3;0;0;-2000;0;0;0
+
+COMBINACIONES
+combinacion;caso;factor
+SERVICIO;PP;1
+SERVICIO;P;1

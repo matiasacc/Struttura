@@ -1,0 +1,16 @@
+# ¿Qué filete le pongo? Soporte de chapa de 6 mm soldado a una columna con dos cordones verticales
+# (120 mm de largo, separados 80 mm). Carga de 3000 N hacia abajo, aplicada 150 mm al costado, en el plano de los cordones (genera torsión).
+# Acero tipo 4130 (Sy = 460 MPa), electrodo E70. El programa traslada la carga al baricentro de los cordones y da el w requerido.
+PROYECTO
+proyecto;Soporte con carga excéntrica
+unidad_fuerza;N
+unidad_longitud;mm
+tipo;soldadura
+
+SOLDADURAS
+id;tipo;disposicion;b;d;electrodo;sy_base;t_gruesa;t_fina
+soporte;filete;costados;80;120;E70;460;6;6
+
+CARGAS
+soldadura;caso;N;Vy;Vz;T;My;Mz;yp;zp
+soporte;servicio;0;0;-3000;0;0;0;-150;0

@@ -1,0 +1,36 @@
+# EJEMPLO 1 - Voladizo en L. Solución analítica: uz(nodo 3) = -25.9010 mm
+# Las líneas que empiezan con # son comentarios. Cada bloque empieza con su título.
+
+PROYECTO
+proyecto;Ejemplo 1 - Voladizo en L
+autor;
+unidad_fuerza;N
+unidad_longitud;mm
+escala_deformada;auto
+
+NODOS
+id;x;y
+1;0;0
+2;1000;0
+3;1000;800
+
+MATERIALES
+id;E;nu;G;fy;sadm
+ACERO;210000;0,3;;235;156
+
+SECCIONES
+id;tipo;d;t;b;h;I;J;A;c;Wt;kv
+T1;tubo;50;3;;;;;;;;
+
+BARRAS
+id;nodo_i;nodo_j;material;seccion
+1;1;2;ACERO;T1
+2;2;3;ACERO;T1
+
+APOYOS
+nodo;uz;phix;phiy
+1;1;1;1
+
+CARGAS
+caso;nodo;Pz;Mx;My
+P;3;-500;0;0

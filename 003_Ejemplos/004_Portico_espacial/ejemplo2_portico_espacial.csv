@@ -1,0 +1,72 @@
+# Estructura espacial de tubos: cuatro columnas empotradas, vigas en X e Y a 2 m, una viga central, carga distribuida,
+# viento lateral y una carga puntual en el tramo.  Unidades: N y mm.
+# Incluye un bloque PUNTOS DE TENSION: el informe muestra el tensor de tensiones completo en esos puntos.  Muestra combinaciones y barras en distintas direcciones.
+PROYECTO
+proyecto;Estructura espacial de tubos
+unidad_fuerza;N
+unidad_longitud;mm
+tipo;portico3d
+
+NODOS
+id;x;y;z
+A;0;0;0
+B;3000;0;0
+C;3000;2000;0
+D;0;2000;0
+a;0;0;2000
+b;3000;0;2000
+c;3000;2000;2000
+d;0;2000;2000
+
+MATERIALES
+id;E;nu;fy
+acero;210000;0.3;235
+
+SECCIONES
+id;tipo;d;t
+col;tubo;76.1;4
+vig;tubo;60.3;3
+
+BARRAS
+id;nodo_i;nodo_j;material;seccion
+CA;A;a;acero;col
+CB;B;b;acero;col
+CC;C;c;acero;col
+CD;D;d;acero;col
+V1;a;b;acero;vig
+V2;b;c;acero;vig
+V3;c;d;acero;vig
+V4;d;a;acero;vig
+
+APOYOS
+nodo;ux;uy;uz;phix;phiy;phiz
+A;1;1;1;1;1;1
+B;1;1;1;1;1;1
+C;1;1;1;1;1;1
+D;1;1;1;1;1;1
+
+CARGAS
+caso;nodo;Fx;Fy;Fz;Mx;My;Mz
+VIENTO;a;600;0;0;0;0;0
+VIENTO;d;600;0;0;0;0;0
+
+CARGAS EN BARRAS
+caso;barra;tipo;valor;valor2;a
+PESO;V1;qgz;-0.5;;
+PESO;V3;qgz;-0.5;;
+PESO;V2;qgz;-0.25;-0.75;
+PESO;V4;Pgz;-800;;1000
+
+COMBINACIONES
+combinacion;caso;factor
+SERVICIO;PESO;1
+SERVICIO;VIENTO;1
+ULT;PESO;1.4
+ULT;VIENTO;1.4
+
+PUNTOS DE TENSION
+id;barra;x;y;z;caso
+raiz_CA_cara_sup;CA;0;38.05;0;SERVICIO
+raiz_CA_borde;CA;0;0;-38.05;SERVICIO
+centro_V1;V1;1500;0;30.15;PESO
+V4_bajo_la_carga;V4;1000;0;-30.15;PESO

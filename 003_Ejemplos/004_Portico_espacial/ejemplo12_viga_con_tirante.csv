@@ -1,0 +1,48 @@
+# Viga doble T en voladizo (perfil de pared delgada, h = 192, b = 100, tf = 8, tw = 6 mm, líneas medias) de 1000 mm, apuntalada por un tirante de tubo 48,3 x 3 mm
+# que baja a 45 grados desde x = 600 hasta un apoyo articulado en el piso. Carga de 5 kN hacia abajo en la punta. Acero tipo 4130 (Sy = 460 MPa), electrodo E70.
+# Soldaduras:
+#   empotramiento  filete doble T (un cordón por ala y dos por el alma) de la viga contra la placa, w = 6 mm
+#   tirante_sup    filete de vuelta completa del tirante contra la viga, w se calcula
+#   tirante_inf    filete de vuelta completa del tirante contra la placa del piso, w = 3 mm dado
+PROYECTO
+proyecto;Viga con tirante
+unidad_fuerza;N
+unidad_longitud;mm
+tipo;portico3d
+
+NODOS
+id;x;y;z
+1;0;0;0
+2;600;0;0
+3;1000;0;0
+4;1100;0;-500
+
+MATERIALES
+id;E;nu;fy;teoria
+acero;205000;0.29;460;vm
+
+SECCIONES
+id;tipo;h;b;tf;tw;d;t
+viga;doble_t;192;100;8;6;;
+tirante;tubo;;;;;48.3;3
+
+BARRAS
+id;nodo_i;nodo_j;material;seccion
+B1;1;2;acero;viga
+B2;2;3;acero;viga
+T1;2;4;acero;tirante
+
+APOYOS
+nodo;ux;uy;uz;phix;phiy;phiz
+1;1;1;1;1;1;1
+4;1;1;1;0;0;0
+
+CARGAS
+caso;nodo;Fx;Fy;Fz;Mx;My;Mz
+servicio;3;0;0;-5000;0;0;0
+
+SOLDADURAS
+id;barra;extremo;tipo;disposicion;b;d;electrodo;sy_base;esp;w;t_gruesa;t_fina
+empotramiento;B1;i;filete;doble_t;100;192;E70;460;;6;8;6
+tirante_sup;T1;i;filete;circulo;;;E70;460;3;;6;3
+tirante_inf;T1;j;filete;circulo;;;E70;460;3;3;3;3

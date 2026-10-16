@@ -1,0 +1,43 @@
+# Pórtico a dos aguas con articulación en la cumbrera y apoyos articulados (arco de tres articulaciones).
+# Nieve: q por unidad de longitud PROYECTADA sobre la horizontal (qgyp).  Viento: q perpendicular a la barra.  Unidades: N y mm.
+PROYECTO
+proyecto;Ejemplo 2 - Portico a dos aguas, tres articulaciones
+unidad_fuerza;N
+unidad_longitud;mm
+tipo;portico
+
+NODOS
+id;x;y
+1;0;0
+2;0;3000
+3;4000;4500
+4;8000;3000
+5;8000;0
+
+MATERIALES
+id;E;nu;fy;sadm
+acero;210000;0.3;235;140
+
+SECCIONES
+id;tipo;I;A;c;kv
+perfil;generica;40000000;5000;120;2
+
+BARRAS
+id;nodo_i;nodo_j;material;seccion;art_i;art_j
+C1;1;2;acero;perfil;0;0
+T1;2;3;acero;perfil;0;1
+T2;3;4;acero;perfil;1;0
+C2;5;4;acero;perfil;0;0
+
+APOYOS
+nodo;ux;uy;phi
+1;1;1;0
+5;1;1;0
+
+CARGAS EN BARRAS
+caso;barra;tipo;valor;valor2;a;b
+NIEVE;T1;qgyp;-1.5;;;
+NIEVE;T2;qgyp;-1.5;;;
+VIENTO;C1;qgx;0.8;;;
+VIENTO;T1;q;-0.5;;;
+VIENTO;T2;q;-0.4;;;

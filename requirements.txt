@@ -1,0 +1,71 @@
+# ======================================================================================
+# STRUTTURA v1.1.12 — dependencias y comandos rápidos
+# Instalar:   pip install -r requirements.txt
+# (las líneas que empiezan con # son comentarios: pip las ignora)
+# ======================================================================================
+
+# --- Obligatorias (probado con Python 3.11, numpy 2.4.4, matplotlib 3.10.9; el código pide Python >= 3.9)
+numpy>=1.24
+matplotlib>=3.7
+
+# --- Opcionales (el programa funciona completo sin ellas; si faltan, avisa y sigue)
+# sectionproperties==3.10.2     # (U0b, todavía no se usa) mapa de tensiones por elementos finitos en la sección y validación
+# playwright                    # solo para generar capturas de los visores / verificar HTML; no hace falta para calcular
+
+
+# ======================================================================================
+# COMANDOS RÁPIDOS  (ejecutar desde la carpeta Struttura/)
+# ======================================================================================
+#
+# Calcular (elige el programa solo según la línea  tipo;...  del bloque PROYECTO):
+#   python struttura.py ARCHIVO.csv
+#
+# Opciones:
+#   --solo-esquema     dibuja los datos sin calcular (revisar numeración, apoyos, ejes, cargas)
+#   -o CARPETA         carpeta de salida (por defecto:  ARCHIVO_salida/)
+#   --tipo portico|portico3d|reticulado|emparrillado|soldadura     forzar el programa
+#   --sin-graficos     (compatibilidad)
+#   --version
+#
+# Resultado: ARCHIVO_salida/informe.html (abrir con el navegador) + CSV de desplazamientos, reacciones, esfuerzos, tensiones.
+#
+# Un ejemplo de cada programa:
+#   python struttura.py 003_Ejemplos/001_Emparrillado/ejemplo2_parrilla.csv
+#   python struttura.py 003_Ejemplos/002_Portico/ejemplo1_portico_simple.csv
+#   python struttura.py 003_Ejemplos/003_Reticulado/ejemplo1_brewer_carga_nodal.csv
+#   python struttura.py 003_Ejemplos/004_Portico_espacial/ejemplo1_voladizo_en_L.csv
+#
+# Pórtico espacial 3D (los más usados):
+#   python struttura.py 003_Ejemplos/004_Portico_espacial/ejemplo5_articulaciones_y_peso_propio.csv    # rótulas + peso propio
+#   python struttura.py 003_Ejemplos/004_Portico_espacial/ejemplo3_mensula_fundicion_mohr.csv          # Mohr modificado, tensor en puntos
+#   python struttura.py 003_Ejemplos/004_Portico_espacial/ejemplo4_fuselaje_sonerai_ii.csv            # fuselaje (35 nudos, 102 barras)
+#
+# SOLDADURAS de filete (modo rápido, sin armar modelo): pie de filete requerido, o CS si se da w
+#   python struttura.py --soldadura "circulo d=50.8 Vz=3000 My=200000 electrodo=E70 w=3"
+#   python struttura.py --soldadura "costados b=20 d=80 Vz=2000 My=100000 electrodo=E70"       # sin w: da el w requerido
+#   (parámetros: N Vy Vz T My Mz yp zp  electrodo= w= sy_base= t_gruesa= t_fina= tau_adm= uf= ul=   —  uf=lbf ul=in para pulgadas)
+#   python struttura.py --soldadura "circulo d=38.1 esp=2 tipo=tope Vz=-1500 My=-600000 electrodo=E70 sy_base=460"   # unión a tope
+#   python struttura.py 003_Ejemplos/005_Soldadura/ejemplo3_tubo_en_voladizo_disposiciones.csv   # compara disposiciones
+#   python struttura.py 003_Ejemplos/004_Portico_espacial/ejemplo7_soldadura_en_el_empotramiento.csv   # bloque SOLDADURAS dentro del 3D
+#
+# Editor visual (tablas guiadas + dibujo, Guardar como, Calcular):   python struttura.py --editor [MODELO.csv]
+# Empezar un modelo nuevo: copiar una plantilla y completarla
+#   002_Plantillas/plantilla_emparrillado.csv | plantilla_portico.csv | plantilla_reticulado.csv | plantilla_portico3d.csv | plantilla_soldadura.csv
+#
+# Biblioteca de materiales: 006_Biblioteca/materiales.csv (las fichas las carga Claude; no hace falta instalar nada)
+#   python struttura.py --biblioteca listar | ver CODIGO
+#
+# Tests:
+#   python -m unittest discover -s 005_Tests
+#
+# Regenerar el modelo del fuselaje (si se cambia la geometría en el generador):
+#   python 004_Documentacion/003_Generadores/generar_fuselaje_sonerai.py
+#
+# Documentación:
+#   004_Documentacion/001_Guia_rapida/Struttura_Guia_rapida.pdf        todos los bloques y columnas de las plantillas
+#   004_Documentacion/002_Memorias/                                    memorias de cálculo de cada programa
+#   004_Documentacion/004_Compendio/PLAN_Compendio.md                  plan para incorporar el Compendio de Cálculo Estructural II
+#
+# Alternativa sin struttura.py (con 001_Codigo en el PYTHONPATH):
+#   python -m struttura ARCHIVO.csv
+# ======================================================================================

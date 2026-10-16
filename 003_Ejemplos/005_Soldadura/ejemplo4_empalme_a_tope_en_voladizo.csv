@@ -1,0 +1,17 @@
+# Viga en voladizo de tubo (38,1 x 2 mm, 4130) empalmada a tope a 400 mm de la punta, con carga de 1500 N en el extremo.
+# Esfuerzos en el empalme: V = 1500 N y M = 1500·400 = 600000 N·mm (torsión nula).  Datos supuestos: Sy del base 460 MPa; electrodo E70 solo como ejemplo.
+# Unión a tope de penetración completa: garganta = espesor de la pared (sin refuerzo).  Veredicto por los admisibles de la Tabla 9-4 de Shigley (σ ≤ 0,60·Sy, con Sy = el menor entre aporte y base);
+# el CS de Von Mises (Sy/σVM) se informa aparte.  [propio] Pared delgada: cordón en la línea media y tensión en la fibra exterior (error < 1 % frente al tubo exacto).
+PROYECTO
+proyecto;Empalme a tope de tubo en voladizo
+unidad_fuerza;N
+unidad_longitud;mm
+tipo;soldadura
+
+SOLDADURAS
+id;tipo;disposicion;d;esp;electrodo;sy_base;t_fina
+empalme;tope;circulo;38.1;2;E70;460;2
+
+CARGAS
+soldadura;caso;N;Vy;Vz;T;My;Mz
+empalme;punta 1500 N;0;0;-1500;0;-600000;0

@@ -1,0 +1,57 @@
+# Brewer, Reticulado plano, Ejercicio N° 4.  Unidades: kg y cm.
+# A = 1 cm², E = 2,1e6 kg/cm², alfa = 1e-5 1/°C, L = 150 cm, 1,5 L = 225 cm.  P = 1500 kg a 53,13° (Px = 900; Py = -1200) en el nudo 3.
+# Barra 4 (2-4): ΔT = -50 °C uniforme.  Barra 5 (1-3): LARGA e = 0,1 cm (hay que comprimirla para montarla).
+# Resorte vertical KR = 5000 kg/cm en el nudo 3 (no es una barra).  Nudos 1 y 2: fijos.  Nudo 4: móvil con ux prefijado = +0,2 cm.
+# Resultados del libro: u3 = (0,1188; -0,0558) cm;  N final: barra 2 = 1108,8; barra 3 = -781,2; barra 4 = 2344,2; barra 5 = -259,9 kg;
+#   fuerza del resorte = 279 kg;  R4x = 1948,2;  R4y = 522,5 kg.
+PROYECTO
+proyecto;Brewer - Reticulado plano - Ejercicio 4
+unidad_fuerza;kg
+unidad_longitud;cm
+tipo;reticulado
+
+NODOS
+id;x;y
+1;0;0
+2;0;150
+3;225;150
+4;225;0
+
+MATERIALES
+id;E;alfa
+m;2100000;0.00001
+
+SECCIONES
+id;tipo;A
+s;generica;1
+
+BARRAS
+id;nodo_i;nodo_j;material;seccion
+1;1;2;m;s
+2;2;3;m;s
+3;3;4;m;s
+4;2;4;m;s
+5;1;3;m;s
+
+APOYOS
+nodo;ux;uy
+1;1;1
+2;1;1
+4;1;1
+
+RESORTES
+nodo;kx;ky
+3;;5000
+
+CARGAS
+caso;nodo;Px;Py
+P;3;900;-1200
+
+CARGAS EN BARRAS
+caso;barra;tipo;valor
+P;4;temp;-50
+P;5;larga;0.1
+
+DESPLAZAMIENTOS PREFIJADOS
+caso;nodo;ux;uy
+P;4;0.2;0

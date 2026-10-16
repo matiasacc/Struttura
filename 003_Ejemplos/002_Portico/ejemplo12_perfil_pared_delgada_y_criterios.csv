@@ -1,0 +1,38 @@
+# EJEMPLO 12 - Perfiles de pared delgada (canal, línea media) y criterios de falla por material.
+# Barra 1: canal de acero (Von Mises).  Barra 2: tubo de fundición gris (Mohr modificado, necesita sut y suc).
+# La flexión es alrededor del eje principal fuerte: h (100 mm) está en el plano del pórtico.
+# pandeo (columna de BARRAS): condición de extremos de cada barra para el pandeo de Euler (art-art por defecto).
+
+PROYECTO
+proyecto;Ejemplo 12 - Pared delgada y criterios
+unidad_fuerza;N
+unidad_longitud;mm
+
+NODOS
+id;x;y
+1;0;0
+2;1500;0
+3;1500;-800
+
+MATERIALES
+id;E;nu;fy;sut;suc;teoria
+acero;210000;0,3;235;;;vm
+fundicion;100000;0,26;;200;750;mohrmod
+
+SECCIONES
+id;tipo;h;b;t;d
+canal;canal;100;50;4;
+tubo;tubo;;;5;60
+
+BARRAS
+id;nodo_i;nodo_j;material;seccion;art_i;art_j;pandeo
+1;1;2;acero;canal;;;
+2;2;3;fundicion;tubo;;;emp-lib
+
+APOYOS
+nodo;ux;uy;phi
+1;1;1;1
+
+CARGAS
+caso;nodo;Px;Py;M
+P;3;0;-3000;0

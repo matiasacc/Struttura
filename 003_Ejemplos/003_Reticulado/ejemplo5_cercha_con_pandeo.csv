@@ -1,0 +1,50 @@
+# Cercha triangular apoyada con dos cargas, con verificación a tracción/compresión y PANDEO.  Unidades: N y mm.
+# Barras de tubo redondo 60,3 x 3,2 (acero F-24).  Columna 'pandeo': condición de vínculos de cada barra (art-art por defecto).
+# Cordón inferior 1-2 y montantes/diagonales: el programa informa N, tensión, CS a fluencia y CS a pandeo (Pc de la tabla de la cátedra).
+PROYECTO
+proyecto;Cercha triangular con pandeo
+unidad_fuerza;N
+unidad_longitud;mm
+tipo;reticulado
+
+NODOS
+id;x;y
+1;0;0
+2;4000;0
+3;8000;0
+4;2000;1500
+5;6000;1500
+
+MATERIALES
+id;E;fy;sadm
+acero;210000;235;140
+
+SECCIONES
+id;tipo;d;t
+tubo;tubo;60.3;3.2
+
+BARRAS
+id;nodo_i;nodo_j;material;seccion;pandeo
+B1;1;2;acero;tubo
+B2;2;3;acero;tubo
+B3;1;4;acero;tubo
+B4;4;5;acero;tubo
+B5;5;3;acero;tubo
+B6;2;4;acero;tubo
+B7;2;5;acero;tubo
+
+APOYOS
+nodo;ux;uy
+1;1;1
+3;0;1
+
+CARGAS
+caso;nodo;Px;Py
+V;4;0;-12000
+V;5;0;-12000
+W;4;6000;0
+
+COMBINACIONES
+combinacion;caso;factor
+TOTAL;V;1
+TOTAL;W;1

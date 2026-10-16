@@ -1,0 +1,48 @@
+# Pórtico plano simple: dos columnas empotradas y una viga.  Unidades: N y mm.
+# Casos: CARGA_MUERTA (q en la viga), VIENTO (fuerza horizontal en el nodo 2) y una combinación.
+PROYECTO
+proyecto;Ejemplo 1 - Portico simple
+autor;
+unidad_fuerza;N
+unidad_longitud;mm
+tipo;portico
+
+NODOS
+id;x;y
+1;0;0
+2;0;4000
+3;6000;4000
+4;6000;0
+
+MATERIALES
+id;E;nu;fy;sadm;alfa
+acero;210000;0.3;235;140;0.000012
+
+SECCIONES
+id;tipo;d;t;b;h;I;A;c;kv
+col;generica;;;;300;83500000;7800;150;
+viga;rect_hueca;;10;150;300;;;;
+
+BARRAS
+id;nodo_i;nodo_j;material;seccion;art_i;art_j
+C1;1;2;acero;col;0;0
+V1;2;3;acero;viga;0;0
+C2;4;3;acero;col;0;0
+
+APOYOS
+nodo;ux;uy;phi
+1;1;1;1
+4;1;1;1
+
+CARGAS
+caso;nodo;Px;Py;M
+VIENTO;2;20000;0;0
+
+CARGAS EN BARRAS
+caso;barra;tipo;valor;valor2;a;b
+CARGA_MUERTA;V1;qgy;-12;;;
+
+COMBINACIONES
+combinacion;caso;factor
+COMB1;CARGA_MUERTA;1.2
+COMB1;VIENTO;1.6

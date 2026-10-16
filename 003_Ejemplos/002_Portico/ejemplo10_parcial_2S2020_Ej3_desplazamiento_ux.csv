@@ -1,0 +1,40 @@
+# 2do sem 2020, Ej.3 Op.2 (Cálculo Estructural I). Unidades: N y mm. Nudo 1 empotrado; nudo 2 apoyo en x; nudo 3: uy = 0, phi = 0, ux prefijado = -0,6.
+# Cátedra: u2 = (0; -0,0062; 0,0042); barra 1 local [703; 1982; 1,32e6; -703; -1982; 2,64e6]; barra 2 local [-1701; -1172; 2,36e6; 1701; 1172; 1,03e6].
+PROYECTO
+proyecto;Parcial 2S2020 Ej3 Op2 - desplazamiento ux prefijado
+unidad_fuerza;N
+unidad_longitud;mm
+tipo;portico
+
+NODOS
+id;x;y
+1;0;0
+2;-1600;1200
+3;-1600;3200
+
+MATERIALES
+id;E;nu
+acero;210000;0.3
+
+SECCIONES
+id;tipo;I;A;h
+s;generica;1500000;1800;100
+
+BARRAS
+id;nodo_i;nodo_j;material;seccion
+1;1;2;acero;s
+2;2;3;acero;s
+
+APOYOS
+nodo;ux;uy;phi
+1;1;1;1
+2;1;0;0
+3;1;1;1
+
+CARGAS
+caso;nodo;Px;Py;M
+C;2;0;0;5000000
+
+DESPLAZAMIENTOS PREFIJADOS
+caso;nodo;ux;uy;phi
+C;3;-0.6;0;0

@@ -1,0 +1,8 @@
+﻿n;id;sut_MPa;sy_MPa;tau_adm_MPa;fuente;notas
+1;E60;427.474952;344.737865;124.105631;Shigley 2024: Tabla 9-3 (Sut, Sy) y Tabla 9-6 cuadro A (τ adm);
+2;E70;482.633011;393.001166;144.789903;Shigley 2024: Tabla 9-3 (Sut, Sy) y Tabla 9-6 cuadro A (τ adm);
+3;E80;551.580583;461.948739;165.474175;Shigley 2024: Tabla 9-3 (Sut, Sy) y Tabla 9-6 cuadro A (τ adm);
+4;E90;620.528156;530.896312;186.158447;Shigley 2024: Tabla 9-3 (Sut, Sy) y Tabla 9-6 cuadro A (τ adm);
+5;E100;689.475729;599.843885;206.842719;Shigley 2024: Tabla 9-3 (Sut, Sy) y Tabla 9-6 cuadro A (τ adm);
+6;E110;;;227.526991;Shigley 2024: Tabla 9-3 (Sut, Sy) y Tabla 9-6 cuadro A (τ adm);E110 no figura en la Tabla 9-3
+7;E120;827.370875;737.739030;248.211263;Shigley 2024: Tabla 9-3 (Sut, Sy) y Tabla 9-6 cuadro A (τ adm);

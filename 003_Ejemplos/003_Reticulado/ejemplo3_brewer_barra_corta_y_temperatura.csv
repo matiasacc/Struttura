@@ -1,0 +1,52 @@
+# Brewer, Reticulado plano, Ejercicio N° 3.  Unidades: lb y in.
+# A = 0,5 in², E = 10e6 lb/in², alfa = 13e-6 1/°F.  P = 3000 lb a 53,13° (Px = 1800; Py = -2400) en el nudo 2.
+# Barra 1 (4-2): CORTA e = 0,01 in (hay que estirarla para montarla).  Barra 3 (1-2): ΔT = +50 °F uniforme.
+# Nudo 4: apoyo fijo con desplazamiento prefijado ux = +0,008 in.  Nudo 2: móvil (impide uy).  Nudos 1 y 3: fijos.
+# Resultados del libro: u2x = -5,540e-3 in;  N final: barra 1 = +469 lb (2500 - 2031), barra 3 = -1519 lb (-3250 + 1731), barra 2 = 0;
+#   R1x = -1518,7;  R2y = 2775,2;  R4x = -281,4;  R4y = -375,2 lb.
+PROYECTO
+proyecto;Brewer - Reticulado plano - Ejercicio 3
+unidad_fuerza;lb
+unidad_longitud;in
+tipo;reticulado
+
+NODOS
+id;x;y
+1;28;16
+2;12;16
+3;12;0
+4;0;0
+
+MATERIALES
+id;E;alfa
+m;10000000;0.000013
+
+SECCIONES
+id;tipo;A
+s;generica;0.5
+
+BARRAS
+id;nodo_i;nodo_j;material;seccion
+1;2;4;m;s
+2;2;3;m;s
+3;1;2;m;s
+
+APOYOS
+nodo;ux;uy
+1;1;1
+2;0;1
+3;1;1
+4;1;1
+
+CARGAS
+caso;nodo;Px;Py
+P;2;1800;-2400
+
+CARGAS EN BARRAS
+caso;barra;tipo;valor
+P;1;corta;0.01
+P;3;temp;50
+
+DESPLAZAMIENTOS PREFIJADOS
+caso;nodo;ux;uy
+P;4;0.008;0

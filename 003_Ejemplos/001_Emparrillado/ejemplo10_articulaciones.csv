@@ -1,0 +1,37 @@
+# EJEMPLO 10 - Viga empotrada-apoyada con articulación (columnas art_i / art_j de BARRAS).
+# Barra 2 articulada a flexión en i (m): M = 0 en el nodo 2.  Solución: R3 = q·L2/2 = 500 N; en el empotramiento V = 1500 N, M = 1e6 N·mm.
+# art_i/art_j: vacío = rígido, m = flexión, t = torsión, mt = ambas.
+
+PROYECTO
+proyecto;Ejemplo 7 - Articulaciones
+unidad_fuerza;N
+unidad_longitud;mm
+
+NODOS
+id;x;y
+1;0;0
+2;1000;0
+3;2000;0
+
+MATERIALES
+id;E;nu
+A;210000;0,3
+
+SECCIONES
+id;tipo;d;t
+T1;tubo;50;3
+
+BARRAS
+id;nodo_i;nodo_j;material;seccion;art_i;art_j
+1;1;2;A;T1;;
+2;2;3;A;T1;m;
+
+APOYOS
+nodo;uz;phix;phiy
+1;1;1;1
+3;1;1;0
+
+CARGAS EN BARRAS
+caso;barra;tipo;valor
+q;1;q;-1
+q;2;q;-1

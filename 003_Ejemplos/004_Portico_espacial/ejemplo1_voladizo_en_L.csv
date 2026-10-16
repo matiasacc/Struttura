@@ -1,0 +1,35 @@
+# Voladizo en L en el espacio (control analítico).  Unidades: N y mm.
+# Barra 1 (empotrada en el nudo 1) a lo largo de X, barra 2 a lo largo de Y con carga vertical P = -1000 N en el extremo libre.
+#   Extremo libre:  uz = -P·(L2³/(3EI) + L1³/(3EI)) - P·L2²·L1·... (ver tests)  ·  la barra 1 trabaja a flexión + torsión (T = P·L2).
+PROYECTO
+proyecto;Voladizo en L 3D
+unidad_fuerza;N
+unidad_longitud;mm
+tipo;portico3d
+
+NODOS
+id;x;y;z
+1;0;0;0
+2;1000;0;0
+3;1000;600;0
+
+MATERIALES
+id;E;nu;fy
+acero;210000;0.3;235
+
+SECCIONES
+id;tipo;d;t
+tubo;tubo;60;4
+
+BARRAS
+id;nodo_i;nodo_j;material;seccion
+1;1;2;acero;tubo
+2;2;3;acero;tubo
+
+APOYOS
+nodo;ux;uy;uz;phix;phiy;phiz
+1;1;1;1;1;1;1
+
+CARGAS
+caso;nodo;Fx;Fy;Fz;Mx;My;Mz
+P;3;0;0;-1000;0;0;0

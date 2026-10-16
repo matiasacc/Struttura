@@ -1,0 +1,43 @@
+# Ménsula de fundición (material frágil, σut ≠ σuc): tubo rectangular con carga excéntrica (flexión biaxial + torsión + corte).
+# Teoría de falla del material: Mohr modificado (teoria;mohrmod), el que el compendio recomienda para frágiles con |σc| > σt.  El informe da el tensor en el empotramiento y en los puntos pedidos.
+# Unidades: N y mm.  x: eje de la ménsula.  La carga actúa 200 mm al costado del eje (y) y hacia abajo.
+PROYECTO
+proyecto;Mensula de fundicion
+unidad_fuerza;N
+unidad_longitud;mm
+tipo;portico3d
+
+NODOS
+id;x;y;z
+1;0;0;0
+2;800;0;0
+3;800;200;0
+
+MATERIALES
+id;E;nu;sut;suc;teoria
+fundicion;100000;0.25;200;700;mohrmod
+
+SECCIONES
+id;tipo;b;h;t
+tubo_rect;rect_hueca;60;100;6
+macizo;rectangular;40;40;;
+
+BARRAS
+id;nodo_i;nodo_j;material;seccion
+M1;1;2;fundicion;tubo_rect
+M2;2;3;fundicion;macizo
+
+APOYOS
+nodo;ux;uy;uz;phix;phiy;phiz
+1;1;1;1;1;1;1
+
+CARGAS
+caso;nodo;Fx;Fy;Fz;Mx;My;Mz
+CARGA;3;0;0;-9000;0;0;0
+
+PUNTOS DE TENSION
+id;barra;x;y;z;caso
+raiz_ala_sup;M1;0;0;50
+raiz_esquina;M1;0;30;50
+raiz_alma;M1;0;30;0
+media_esquina;M1;400;-30;-50

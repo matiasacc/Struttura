@@ -1,0 +1,46 @@
+# 1er parcial 1er sem 2021 (Cálculo Estructural I), Op.2: dos barras de 2500 mm; nudo 3 empotrado; nudo 1 con chapa soldada (uz y φx restringidos, φy libre);
+# resorte vertical K_R = 400 N/mm en el nudo 2 con uz = 10 mm y φx = -0,004 prefijados; q = 2,5 N/mm hacia +z en la barra 1-2; ΔTs = -35 °C en la cara superior de la barra 2-3.
+# Unidades: N y mm. Geometría en planta: 3 = (0;0), 1 = (0;3000), 2 = (2000;1500).
+# Cátedra (Estado II): φ1y = -0,0074; u2z = 10; φ2x = -0,004 (prefijado); φ2y = -0,0054.  Estado I: qL²/12 = 1302083, qL/2 = 3125, EIκ = 1260000.
+PROYECTO
+proyecto;Parcial 1S2021 Op2 - chapa soldada y resorte
+unidad_fuerza;N
+unidad_longitud;mm
+
+NODOS
+id;x;y
+1;0;3000
+2;2000;1500
+3;0;0
+
+MATERIALES
+id;E;G;alfa
+M;210000;80000;0,000012
+
+SECCIONES
+id;tipo;I;J;A;c;h
+S;generica;1000000;2000000;1000;35;70
+
+BARRAS
+id;nodo_i;nodo_j;material;seccion
+1;1;2;M;S
+2;2;3;M;S
+
+APOYOS
+nodo;uz;phix;phiy
+1;1;1;0
+2;1;1;0
+3;1;1;1
+
+RESORTES
+nodo;kz;kphix;kphiy
+2;400;;
+
+CARGAS EN BARRAS
+caso;barra;tipo;valor;valor2;a;b
+C;1;q;2,5;;;
+C;2;temp;-35;0;;
+
+DESPLAZAMIENTOS PREFIJADOS
+caso;nodo;uz;phix;phiy
+C;2;10;-0,004;

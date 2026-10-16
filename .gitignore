@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+*_salida/
+# PDFs de terceros (fichas de materiales, tablas CIRSOC): solo en la copia local
+006_Biblioteca/fichas/
+006_Biblioteca/fuentes/

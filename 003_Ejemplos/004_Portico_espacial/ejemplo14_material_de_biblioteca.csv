@@ -1,0 +1,40 @@
+# Voladizo de tubo 38,1 x 2 mm con el material tomado de la biblioteca (n.º 1: AISI 1010 Steel, cold drawn).
+# En MATERIALES solo va el NÚMERO de la biblioteca en la columna 'lib'; E, nu, fy, sut y rho salen de la ficha.
+# Lo que se cargue a mano en una columna manda sobre la ficha.
+# Los números están en 006_Biblioteca/materiales.csv (columna n); python struttura.py --biblioteca listar los muestra.  Un número nunca cambia.
+PROYECTO
+proyecto;Voladizo con material de biblioteca
+unidad_fuerza;N
+unidad_longitud;mm
+tipo;portico3d
+peso_propio;PP
+
+NODOS
+id;x;y;z
+1;0;0;0
+2;400;0;0
+
+MATERIALES
+id;lib
+acero1010;1
+
+SECCIONES
+id;tipo;d;t
+tubo;tubo;38.1;2
+
+BARRAS
+id;nodo_i;nodo_j;material;seccion
+B1;1;2;acero1010;tubo
+
+APOYOS
+nodo;ux;uy;uz;phix;phiy;phiz
+1;1;1;1;1;1;1
+
+CARGAS
+caso;nodo;Fx;Fy;Fz;Mx;My;Mz
+carga;2;0;0;-1500;0;0;0
+
+COMBINACIONES
+combinacion;caso;factor
+SERVICIO;PP;1
+SERVICIO;carga;1

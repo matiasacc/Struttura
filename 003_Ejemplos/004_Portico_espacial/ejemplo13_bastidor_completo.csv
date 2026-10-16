@@ -1,0 +1,100 @@
+# ======================================================================================
+# EJEMPLO COMPLETO: bastidor 2000 x 1000 x 800 mm que mezcla casi todo lo que hace el programa.
+#   Secciones:       tubo (columnas y diagonales), doble T y canal de pared delgada (vigas largas y lado corto), rectangular hueca (travesaño)
+#   Materiales:      acero común y acero 4130, con densidad para el peso propio
+#   Articulaciones:  travesaño T2 articulado en ambos extremos; diagonales D1 y D2 articuladas en ambos extremos (trabajan solo a axil)
+#   Cargas:          peso propio, carga puntual y distribuida en vigas, viento en nudos; combinaciones SERVICIO y MAYORADA
+#   Tensiones:       puntos pedidos, más los más exigidos que elige el programa
+#   Soldaduras (8):  filete circulo, filete arco (4 arcos), filete rectangulo, filete C sobre canal, filete doble_t, tope circulo,
+#                    filete custom, y un aporte propio cargado en ELECTRODOS.  Algunas con w dado (da CS) y otras sin w (da el w requerido).
+# Unidades: N, mm, MPa.  Ejes globales: Z hacia arriba.  Cargas gravitatorias negativas.
+# ======================================================================================
+PROYECTO
+proyecto;Bastidor completo
+unidad_fuerza;N
+unidad_longitud;mm
+tipo;portico3d
+peso_propio;PP
+
+NODOS
+id;x;y;z
+1;0;0;0
+2;2000;0;0
+3;2000;1000;0
+4;0;1000;0
+5;0;0;800
+6;2000;0;800
+7;2000;1000;800
+8;0;1000;800
+
+MATERIALES
+id;E;nu;fy;sut;rho;teoria
+acero;210000;0.3;235;360;7850;vm
+c4130;205000;0.29;460;560;7850;vm
+
+SECCIONES
+id;tipo;d;t;b;h;tf;tw
+columna;tubo;50.8;3;;;;
+diagonal;tubo;25.4;2;;;;
+viga;doble_t;;;100;192;8;6
+trav;rect_hueca;;3;40;60;;
+canal;canal;;;50;120;8;5
+
+BARRAS
+id;nodo_i;nodo_j;material;seccion;art_i;art_j
+P1;1;5;c4130;columna;;
+P2;2;6;c4130;columna;;
+P3;3;7;c4130;columna;;
+P4;4;8;c4130;columna;;
+T1;5;6;acero;viga;;
+T2;6;7;acero;trav;1;1
+T3;7;8;acero;viga;;
+T4;8;5;acero;canal;;
+D1;1;6;c4130;diagonal;1;1
+D2;4;7;c4130;diagonal;1;1
+
+APOYOS
+nodo;ux;uy;uz;phix;phiy;phiz
+1;1;1;1;1;1;1
+2;1;1;1;1;1;1
+3;1;1;1;1;1;1
+4;1;1;1;1;1;1
+
+CARGAS
+caso;nodo;Fx;Fy;Fz;Mx;My;Mz
+VIENTO;5;0;6000;0;0;0;0
+VIENTO;6;0;6000;0;0;0;0
+CARGA;7;0;0;-30000;0;0;0
+
+CARGAS EN BARRAS
+caso;barra;tipo;valor;valor2;a
+CARGA;T1;Pgz;-40000;;1000
+CARGA;T3;qgz;-20;;
+
+PUNTOS DE TENSION
+id;barra;x;y;z;caso
+base_columna;P1;0;25.4;0;SERVICIO
+centro_viga;T1;1000;0;96;SERVICIO
+
+COMBINACIONES
+combinacion;caso;factor
+SERVICIO;PP;1
+SERVICIO;CARGA;1
+SERVICIO;VIENTO;1
+MAYORADA;PP;1.2
+MAYORADA;CARGA;1.6
+
+ELECTRODOS
+id;tau_adm
+aporte_propio;150
+
+SOLDADURAS
+id;barra;extremo;tipo;disposicion;arcos;b;d;segmentos;electrodo;sy_base;esp;w;t_gruesa;t_fina
+col1_base;P1;i;filete;circulo;;;;;E70;460;;5;12;3
+col2_base;P2;i;filete;arco;45:30|135:30|225:30|315:30;;;;E70;460;;5;12;3
+col3_tope;P3;j;tope;circulo;;;;;E70;460;;;;
+trav_viga;T2;i;filete;rectangulo;;;;;E70;235;3;;6;3
+viga_doble_t;T1;i;filete;doble_t;;100;192;;E70;235;;6;8;6
+canal_C;T4;j;filete;C;;50;120;;aporte_propio;235;;5;8;5
+diag1_custom;D1;i;filete;custom;;;;-12 -12 -12 12|12 -12 12 12;E70;460;;2;3;2
+diag2_sin_w;D2;j;filete;circulo;;;;;E70;460;;;3;2

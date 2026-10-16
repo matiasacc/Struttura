@@ -1,0 +1,33 @@
+# Struttura · SOLDADURAS DE FILETE (modo rápido, tipo;soldadura).  Python struttura.py ARCHIVO.csv     (o una sola línea: python struttura.py --soldadura "circulo d=50.8 Vz=3000 electrodo=E70 w=3")
+# Sin 'w' el programa calcula el pie de filete REQUERIDO; con 'w' da el coeficiente de seguridad.  Fórmulas y fuentes: 004_Documentacion/002_Memorias/Struttura_Memoria_soldadura.html
+# Ejes: x = eje de la barra (normal al plano de los cordones);  y, z = ejes en el plano de los cordones.  b = medida según y, d = medida según z (d = diámetro en 'circulo' y 'arco').
+PROYECTO
+proyecto;Mi soldadura
+unidad_fuerza;N
+unidad_longitud;mm
+tipo;soldadura
+
+# --- ELECTRODOS (opcional): para agregar un aporte propio.  tau_adm en unidades de tensión del modelo (MPa si N y mm); sut y sy opcionales.
+#     Tabla incluida: E60, E70, E80, E90, E100, E110, E120 (Shigley Tabla 9-6 A y 9-3).
+ELECTRODOS
+id;sut;sy;tau_adm
+mi_aporte;;;150
+
+# --- SOLDADURAS.  tipo: filete (por defecto) | tope (unión a tope de penetración completa: garganta = espesor 'esp' de las piezas; se verifica con σ ≤ 0,60·Sy, τ ≤ 0,30·Sut y Von Mises).
+#     disposicion: circulo | arco | rectangulo | costados | arriba_abajo | linea | L | C | C_invertida | doble_t | custom
+#     parámetros: circulo (d) · arco (d;arcos = "centro:abertura|centro:abertura" en grados, [propio]) · rectangulo, costados, arriba_abajo, L, C, C_invertida, doble_t (b;d) · linea (d)
+#     custom: columna 'segmentos' = "y0 z0 y1 z1|y0 z0 y1 z1|..."   (origen y ejes a gusto del usuario)
+#     opcionales: esp (espesor de pared: solo para dibujar el contorno interior del tubo) · w (pie del filete = cateto; la garganta es t = 0,707·w y también se informa) · sy_base (fluencia del metal base) · t_gruesa / t_fina (espesores de las piezas, para el pie mínimo y máximo)
+SOLDADURAS
+id;tipo;disposicion;b;d;arcos;esp;segmentos;electrodo;w;sy_base;t_gruesa;t_fina
+tubo;filete;circulo;;38.1;;2;;E70;;460;2;2
+placa;filete;C;56;190;;;;E70;6;;;
+empalme;tope;circulo;;38.1;;2;;E70;;460;;2
+
+# --- CARGAS: esfuerzos en la unión.  N tracción +; T = momento alrededor de x.  yp;zp (opcional): punto donde actúa la carga (en el sistema de la disposición);
+#     el programa traslada todo al baricentro del grupo (así sale el torsor de una carga excéntrica).
+CARGAS
+soldadura;caso;N;Vy;Vz;T;My;Mz;yp;zp
+tubo;servicio;0;0;-1500;20000;-600000;;;
+placa;excentrica;0;0;-25000;0;0;0;-100;0
+empalme;punta;0;0;-1500;0;-600000;;;

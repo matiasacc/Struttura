@@ -1,0 +1,38 @@
+# Voladizo de tubo 38,1 x 2 mm (4130), 400 mm, P = 1500 N en la punta. Soldado a la placa solo con dos cordones de filete de 45° a los costados (arcos centrados en 0° y 180°).
+# Se verifica en el empotramiento (extremo i de B1). Ver arcos: columna arcos = centro:abertura|centro:abertura (grados desde +y hacia +z).
+PROYECTO
+proyecto;Voladizo con dos cordones de 45 grados
+unidad_fuerza;N
+unidad_longitud;mm
+tipo;portico3d
+
+NODOS
+id;x;y;z
+1;0;0;0
+2;200;0;0
+3;400;0;0
+
+MATERIALES
+id;E;nu;fy;teoria
+acero;205000;0.29;460;vm
+
+SECCIONES
+id;tipo;d;t
+tubo;tubo;38.1;2
+
+BARRAS
+id;nodo_i;nodo_j;material;seccion
+B1;1;2;acero;tubo
+B2;2;3;acero;tubo
+
+APOYOS
+nodo;ux;uy;uz;phix;phiy;phiz
+1;1;1;1;1;1;1
+
+CARGAS
+caso;nodo;Fx;Fy;Fz;Mx;My;Mz
+servicio;3;0;0;-1500;0;0;0
+
+SOLDADURAS
+id;barra;extremo;tipo;disposicion;arcos;electrodo;sy_base;esp
+empotramiento;B1;i;filete;arco;0:45|180:45;E70;460;2

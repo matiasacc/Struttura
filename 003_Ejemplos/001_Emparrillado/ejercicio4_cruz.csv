@@ -1,0 +1,62 @@
+# EJERCICIO 4 - Cruz de dos vigas que se cruzan en el centro (nodo 3).
+# Viga en X: 4000 mm (nodos 1-2-3-4-5).  Viga en Y: 3000 mm (nodos 6-7-3-8-9).
+# Extremos apoyados (uz). Cada viga tiene un extremo con la torsión impedida para que no gire sobre su eje.
+# Las barras 4 y 8 están cargadas "al revés" (de derecha a izquierda / de arriba hacia abajo) a propósito.
+
+PROYECTO
+proyecto;Ejercicio 4 - Cruz de vigas
+autor;
+unidad_fuerza;N
+unidad_longitud;mm
+escala_deformada;auto
+
+NODOS
+id;x;y
+1;0;0
+2;1000;0
+3;2000;0
+4;3000;0
+5;4000;0
+6;2000;-1500
+7;2000;-750
+8;2000;750
+9;2000;1500
+
+MATERIALES
+id;E;nu;G;fy;sadm
+ACERO;210000;0,3;;235;156
+
+SECCIONES
+id;tipo;d;t;b;h;I;J;A;c;Wt;kv
+TR50x100;rect_hueca;;3;50;100;;;;;;
+
+BARRAS
+id;nodo_i;nodo_j;material;seccion
+1;1;2;ACERO;TR50x100
+2;2;3;ACERO;TR50x100
+3;3;4;ACERO;TR50x100
+4;5;4;ACERO;TR50x100
+5;6;7;ACERO;TR50x100
+6;7;3;ACERO;TR50x100
+7;3;8;ACERO;TR50x100
+8;9;8;ACERO;TR50x100
+
+APOYOS
+nodo;uz;phix;phiy
+1;1;1;0
+5;1;0;0
+6;1;0;1
+9;1;0;0
+
+CARGAS
+caso;nodo;Pz;Mx;My
+D;2;-1500;0;0
+D;4;-1500;0;0
+D;7;-1500;0;0
+D;8;-1500;0;0
+L;3;-10000;0;0
+
+COMBINACIONES
+combinacion;caso;factor
+1.2D+1.6L;D;1,2
+1.2D+1.6L;L;1,6

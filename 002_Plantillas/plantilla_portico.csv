@@ -1,0 +1,125 @@
+# ======================================================================================
+# PLANTILLA - PÓRTICO PLANO   (copiar, renombrar y completar)
+# Un solo archivo con BLOQUES: una línea con el título, luego los encabezados y los datos.
+# Líneas vacías y líneas que empiezan con # se ignoran.  Vale ';' con coma decimal (Excel) o ',' con punto.
+# Sistema de unidades coherente (por ej. N, mm, MPa  o  kN, cm, kN/cm²).
+# Ejes globales: X → derecha, Y ↑.  GDL por nodo: ux, uy, phi (phi positivo ANTIHORARIO).
+# Las cargas gravitatorias son NEGATIVAS (en Y).  Barra: xl de nodo_i a nodo_j, yl a 90° antihorario.
+# Esta plantilla es un modelo válido (portal empotrado con viga): se puede calcular tal cual.
+# ======================================================================================
+
+# --- PROYECTO (opcional): clave;valor.  tipo;portico es lo que elige el programa de pórtico.
+PROYECTO
+proyecto;Plantilla portico plano
+autor;
+unidad_fuerza;N
+unidad_longitud;mm
+tipo;portico
+# peso_propio;PP        (agrega al caso PP el peso propio de todas las barras: necesita 'rho' en MATERIALES; si no se escribe, no se calcula)
+# gravedad;-y          (dirección de la gravedad: ±x, ±y; por defecto -y)
+# escala_deformada;auto        (o un número)
+# escala_diagramas;barra       (barra = cada barra a su escala | global = una sola escala)
+# anexo_matrices;si            (si = incluye las matrices de rigidez en el informe | no)
+# csv_salida;excel_es          (excel_es = ';' y coma decimal | estandar)
+
+# --- NODOS (obligatorio)
+NODOS
+id;x;y
+1;0;0
+2;0;4000
+3;6000;4000
+4;6000;0
+
+# --- MATERIALES (obligatorio): E; nu, fy, sadm y alfa son opcionales.  Criterio de falla: sut, suc, teoria = vm (defecto) | tresca | rankine | mohr | mohrmod.
+#     rho (opcional): densidad en kg/m³, solo para el peso propio (la ficha de la biblioteca también la trae).
+#     lib (opcional): NÚMERO de un material de tu biblioteca (ej. lib;1): completa E, nu y fy; lo cargado a mano en otra columna manda (ver Struttura_Memoria_biblioteca.html)
+#     fy y sadm → coeficientes de seguridad.  alfa [1/°C] → solo si hay cargas de temperatura.
+MATERIALES
+id;E;nu;fy;sadm;alfa
+acero;210000;0.3;235;140;0.000012
+
+# --- SECCIONES (obligatorio).  tipo:
+#     tubo (d,t) | circular (d) | rectangular (b,h) | rect_hueca (b,h,t) | generica (I,A + c y kv opcionales, h opcional)
+#     perfiles abiertos de pared delgada (línea media): canal | doble_t | te | z | angular  con h, b, t (o tf y tw); h en el plano de la flexión
+#     h = dimensión EN EL PLANO del pórtico (la que flexa); se usa también en los gradientes térmicos.
+#     c = distancia a la fibra extrema; kv = factor de corte (τmáx = kv·V/A).  Sin c/A/kv no hay tensiones.
+SECCIONES
+id;tipo;d;t;b;h;I;A;c;kv
+col;generica;;;;300;83500000;7800;150;
+viga;rect_hueca;;10;150;300;;;;
+
+# --- BARRAS (obligatorio).  art_i / art_j: 1 = articulación (M = 0) en ese extremo; vacío o 0 = rígido.
+#     pandeo (opcional, agregar la columna): art-art (defecto) | emp-lib | emp-art | emp-emp  → CS pandeo de Euler en barras comprimidas.
+BARRAS
+id;nodo_i;nodo_j;material;seccion;art_i;art_j
+C1;1;2;acero;col;0;0
+V1;2;3;acero;viga;0;0
+C2;4;3;acero;col;0;0
+
+# --- APOYOS (obligatorio): 1 = GDL restringido.
+#     Empotrado 1;1;1  |  Articulado fijo 1;1;0  |  Móvil vertical 0;1;0  |  Móvil horizontal 1;0;0
+APOYOS
+nodo;ux;uy;phi
+1;1;1;1
+4;1;1;1
+
+# --- RESORTES (opcional): rigidez [fuerza/longitud] en ux, uy; kphi [momento/rad].  Vacío = sin resorte.
+# RESORTES
+# nodo;kx;ky;kphi
+# 3;;800;
+
+# --- RESORTES INCLINADOS (opcional): resorte lineal cuyo eje forma 'angulo' grados con +X (antihorario).
+# RESORTES INCLINADOS
+# nodo;k;angulo
+# 3;1500;-45
+
+# --- CARGAS (opcional): cargas en nodos, ejes globales.  Px, Py [fuerza], M [momento, antihorario +].
+CARGAS
+caso;nodo;Px;Py;M
+VIENTO;2;20000;0;0
+
+# --- CARGAS EN BARRAS (opcional): caso;barra;tipo;valor;valor2;a;b
+#     a y b se miden a lo largo de la barra desde nodo_i.  Vacíos en a,b = toda la barra.
+#     DISTRIBUIDAS (valor en a, valor2 en b; valor2 vacío = uniforme):
+#        q     perpendicular a la barra, positiva hacia +yl
+#        qa    axial, positiva hacia +xl
+#        qgx   en X global, por unidad de longitud de barra        qgy   en Y global, por unidad de longitud de barra
+#        qgxp  en X global, por unidad de longitud PROYECTADA sobre la vertical   (viento sobre paramento)
+#        qgyp  en Y global, por unidad de longitud PROYECTADA sobre la horizontal (nieve)
+#     PUNTUALES en la posición a:   P (⊥ a la barra)  Pa (axial)  Pgx (X global)  Pgy (Y global)  Mp (momento, antihorario +)
+#     TEMPERATURA (toda la barra):  temp   valor = ΔT de la cara +yl, valor2 = ΔT de la cara −yl   [°C]
+CARGAS EN BARRAS
+caso;barra;tipo;valor;valor2;a;b
+CARGA_MUERTA;V1;qgy;-12;;;
+# NIEVE;V1;qgyp;-1.5;;;
+# TEMP;V1;temp;25;5;;
+# PUNT;V1;Pgy;-40000;;2000;
+# MOM;V1;Mp;5e6;;3000;
+
+# --- DESPLAZAMIENTOS PREFIJADOS (opcional): solo en GDL restringidos en APOYOS (p. ej. asentamiento de un apoyo).
+# DESPLAZAMIENTOS PREFIJADOS
+# caso;nodo;ux;uy;phi
+# ASENT;4;0;-10;0
+
+# --- DESAJUSTE DE RESORTES (opcional): desplazamiento impuesto al APOYO del resorte (fuerza = -k(u-e)).
+#     Un resorte más corto que lo proyectado (estirado para conectarlo) → e negativo.
+#     'inclinado' = desajuste a lo largo del eje del resorte inclinado.
+# DESAJUSTE DE RESORTES
+# caso;nodo;ux;uy;phi;inclinado
+# MONTAJE;3;;;;-5
+
+# --- COMBINACIONES (opcional): superposición lineal de casos con factores.
+COMBINACIONES
+combinacion;caso;factor
+COMB1;CARGA_MUERTA;1.2
+COMB1;VIENTO;1.6
+
+# --- SOLDADURAS (opcional): verifica un cordón en el extremo i o j de una barra con los esfuerzos del solver (cada caso y combinación).
+#     Pórtico plano: toma N, V y M del extremo.  Disposiciones: circulo, arco, rectangulo, costados, arriba_abajo, linea, L, C, ...  (ver Memoria de soldadura)
+#     sy_base = fluencia del metal base [MPa]; o lib;N = fy del material N de la biblioteca de materiales (lo escrito a mano manda).
+#     electrodo: se busca en ELECTRODOS, luego en 006_Biblioteca/electrodos.csv, luego en la tabla de Shigley (E60 ... E120).
+# SOLDADURAS
+# id;barra;extremo;disposicion;electrodo;w;sy_base;lib;t_gruesa;t_fina
+# S1;1;i;circulo;E70;4;235;;6;6
+# ELECTRODOS
+# id;sut;sy;tau_adm;lib

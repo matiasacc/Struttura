@@ -1,0 +1,23 @@
+# Consulta rápida: tubo en voladizo soldado a una placa, ¿qué pie de filete hace falta según cómo se suelde?
+# Mismo esfuerzo en el empotramiento (V = 1500 N, M = V·400 mm, T = 20 N·m) para un tubo redondo de 38,1 mm y para un tubo rectangular de 40 × 60 mm (b según y, d según z) con tres disposiciones.
+# Electrodo E70 solo como ejemplo: para tu aporte real cargá su τ_adm en el bloque ELECTRODOS (tau_adm en MPa) y usalo por nombre.
+# Para otras disposiciones (L, C, doble_t, arco, custom) ver la lista en la plantilla.
+PROYECTO
+proyecto;Tubo en voladizo - comparacion de disposiciones
+unidad_fuerza;N
+unidad_longitud;mm
+tipo;soldadura
+
+SOLDADURAS
+id;disposicion;b;d;esp;electrodo;sy_base;t_gruesa;t_fina
+redondo_vuelta_completa;circulo;;38.1;2;E70;460;2;2
+rect_vuelta_completa;rectangulo;40;60;2;E70;460;2;2
+rect_solo_costados;costados;40;60;2;E70;460;2;2
+rect_solo_arriba_abajo;arriba_abajo;40;60;2;E70;460;2;2
+
+CARGAS
+soldadura;caso;N;Vy;Vz;T;My;Mz
+redondo_vuelta_completa;V+M+T;0;0;-1500;20000;-600000;0
+rect_vuelta_completa;V+M+T;0;0;-1500;20000;-600000;0
+rect_solo_costados;V+M+T;0;0;-1500;20000;-600000;0
+rect_solo_arriba_abajo;V+M+T;0;0;-1500;20000;-600000;0

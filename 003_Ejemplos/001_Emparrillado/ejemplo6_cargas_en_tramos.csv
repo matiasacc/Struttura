@@ -1,0 +1,66 @@
+# EJEMPLO 6 - Parrilla 6000 x 2000 mm con cargas en el tramo (q uniforme, q trapecial parcial, P puntual, gradiente térmico)
+# y cargas nodales con Pz, Mx y My.  Cuatro esquinas empotradas.
+# q [N/mm] y P [N] positivas hacia +z (la gravedad es NEGATIVA).  a y b se miden desde el nodo i de la barra.
+# temp: valor = ΔT de la fibra superior, valor2 = ΔT de la fibra inferior [°C]; requiere alfa (MATERIALES) y h (SECCIONES).
+
+PROYECTO
+proyecto;Ejemplo 6 - Parrilla con cargas en el tramo
+unidad_fuerza;N
+unidad_longitud;mm
+
+NODOS
+id;x;y
+1;0;0
+2;3000;0
+3;6000;0
+4;0;2000
+5;3000;2000
+6;6000;2000
+
+MATERIALES
+id;E;nu;G;fy;sadm;alfa
+ACERO;210000;0,3;;235;156;0,000012
+
+SECCIONES
+id;tipo;d;t;b;h
+TR;rect_hueca;;5;100;150
+
+BARRAS
+id;nodo_i;nodo_j;material;seccion
+1;1;2;ACERO;TR
+2;2;3;ACERO;TR
+3;4;5;ACERO;TR
+4;5;6;ACERO;TR
+5;1;4;ACERO;TR
+6;2;5;ACERO;TR
+7;3;6;ACERO;TR
+
+APOYOS
+nodo;uz;phix;phiy
+1;1;1;1
+3;1;1;1
+4;1;1;1
+6;1;1;1
+
+CARGAS
+caso;nodo;Pz;Mx;My
+L;5;-8000;2000000;1500000
+L;2;-3000;0;0
+
+CARGAS EN BARRAS
+caso;barra;tipo;valor;valor2;a;b
+D;1;q;-0,25;;;
+D;2;q;-0,25;;;
+D;3;q;-0,25;;;
+D;4;q;-0,25;;;
+L;2;q;-5;-10;500;2500
+L;6;P;-6000;;1000;
+T;3;temp;30;0;;
+
+COMBINACIONES
+combinacion;caso;factor
+1.4D;D;1,4
+1.2D+1.6L;D;1,2
+1.2D+1.6L;L;1,6
+D+T;D;1
+D+T;T;1

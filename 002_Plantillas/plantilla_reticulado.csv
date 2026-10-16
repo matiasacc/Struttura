@@ -1,0 +1,97 @@
+# ======================================================================================
+# PLANTILLA - RETICULADO PLANO   (copiar, renombrar y completar)
+# Un solo archivo con BLOQUES: una línea con el título, luego los encabezados y los datos.
+# Líneas vacías y líneas que empiezan con # se ignoran.  Vale ';' con coma decimal (Excel) o ',' con punto.
+# Sistema de unidades coherente (por ej. N, mm, MPa  o  kg, cm, kg/cm²).
+# Ejes globales: X → derecha, Y ↑.  GDL por nodo: ux, uy (NO hay giros ni momentos).
+# Las barras son BIELAS: articuladas en ambos extremos, solo trabajan a axil (N > 0 tracción).
+# Las cargas van SOLO en los nudos.  No hay cargas en el tramo ni perpendiculares a la barra.
+# Los RESORTES no son barras: se dibujan en verde con forma de resorte.
+# Esta plantilla es un modelo válido (cercha triangular): se puede calcular tal cual.
+# ======================================================================================
+
+# --- PROYECTO: tipo;reticulado es lo que elige el programa de reticulado.
+PROYECTO
+proyecto;Plantilla reticulado plano
+autor;
+unidad_fuerza;N
+unidad_longitud;mm
+tipo;reticulado
+# peso_propio;PP        (agrega al caso PP el peso propio de todas las barras: necesita 'rho' en MATERIALES; si no se escribe, no se calcula)
+# gravedad;-y          (dirección de la gravedad: ±x, ±y; por defecto -y)  — en el reticulado el peso de cada barra se reparte mitad en cada nudo
+# escala_deformada;auto        (o un número)
+# escala_diagramas;barra        (barra | global; en el visor hay una casilla "escala única")
+# csv_salida;excel_es          (excel_es = ';' y coma decimal | estandar)
+
+# --- NODOS (obligatorio)
+NODOS
+id;x;y
+1;0;0
+2;4000;0
+3;2000;1500
+
+# --- MATERIALES (obligatorio): E; fy, sadm, alfa opcionales.
+#     rho (opcional): densidad en kg/m³, solo para el peso propio (la ficha de la biblioteca también la trae).
+#     lib (opcional): NÚMERO de un material de tu biblioteca (ej. lib;1): completa E y fy; lo cargado a mano en otra columna manda (ver Struttura_Memoria_biblioteca.html)
+#     fy y sadm → coeficientes de seguridad.  alfa [1/°C] → solo si hay temperatura.
+MATERIALES
+id;E;fy;sadm;alfa
+acero;210000;235;140;0.000012
+
+# --- SECCIONES (obligatorio): para reticulado alcanza el área A.
+#     tipo: tubo (d,t) | circular (d) | rectangular (b,h) | rect_hueca (b,h,t) | generica (A y, si querés pandeo, I)
+#     Para verificar PANDEO hace falta I (el del eje débil).  En 'generica' sin I no se verifica pandeo.
+SECCIONES
+id;tipo;d;t
+tubo;tubo;60.3;3.2
+
+# --- BARRAS (obligatorio).  pandeo (opcional): condición de vínculos para Pc de Euler:
+#     art-art (defecto) | emp-lib | emp-art | emp-emp
+BARRAS
+id;nodo_i;nodo_j;material;seccion;pandeo
+B1;1;2;acero;tubo;art-art
+B2;1;3;acero;tubo;art-art
+B3;2;3;acero;tubo;art-art
+
+# --- APOYOS (obligatorio): 1 = restringido, 0 = libre.  Hace falta impedir todos los movimientos de cuerpo rígido.
+APOYOS
+nodo;ux;uy
+1;1;1
+2;0;1
+
+# --- RESORTES (opcional): rigidez [fuerza/longitud] según X o Y en el nodo.
+# RESORTES
+# nodo;kx;ky
+# 2;500;
+
+# --- RESORTES INCLINADOS (opcional): k y ángulo del eje (grados, desde +X, antihorario).
+# RESORTES INCLINADOS
+# nodo;k;angulo
+# 3;400;90
+
+# --- CARGAS nodales: caso;nodo;Px;Py  (gravedad = Py negativa)
+CARGAS
+caso;nodo;Px;Py
+P;3;0;-10000
+
+# --- CARGAS EN BARRAS (opcional): NO son cargas en el tramo, sino efectos que solo alargan o acortan la barra (Estado I de Brewer):
+#       temp    ΔT uniforme [°C] (necesita alfa en el material)
+#       corta   barra más CORTA que la distancia entre nudos, e > 0 (hay que estirarla para montarla → queda traccionada)
+#       larga   barra más LARGA, e > 0 (hay que comprimirla → queda comprimida)
+#     Cualquier otra carga (q, P, qa, …) se rechaza: las bielas no admiten carga en el tramo.
+# CARGAS EN BARRAS
+# caso;barra;tipo;valor
+# T;B1;temp;30
+# M;B2;corta;0.5
+
+# --- DESPLAZAMIENTOS PREFIJADOS (opcional): valor impuesto a un GDL restringido (asentamiento).
+# DESPLAZAMIENTOS PREFIJADOS
+# caso;nodo;ux;uy
+# S;2;0;-3
+
+# --- DESAJUSTE DE RESORTES (opcional): caso;nodo;ux;uy;inclinado
+# --- COMBINACIONES (opcional): combinacion;caso;factor
+# COMBINACIONES
+# combinacion;caso;factor
+# TOTAL;P;1.35
+# TOTAL;T;1

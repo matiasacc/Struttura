@@ -1,0 +1,51 @@
+# EJEMPLO 14 - Pórtico plano biempotrado (un vano, dos columnas) con carga distribuida en la viga y carga horizontal.
+# Casos: Q = carga distribuida de 10 N/mm sobre la viga;  V = fuerza horizontal de 10000 N a la altura de la viga.  Combinación: Q + V.
+# Perfil: doble T de pared delgada (línea media h = 200, b = 100, tf = 8, tw = 5) [propio: dimensiones de ejemplo, no un perfil de catálogo].
+# La flexión es alrededor del eje fuerte: h está en el plano del pórtico.  Criterio de falla: Von Mises (fy = 235 MPa).
+# pandeo: columnas emp-lib (empotrada en la base, libre arriba) [propio: elección de ejemplo]; la viga queda con el valor por defecto (art-art).
+# Verificación a mano del caso Q: ver 003_Ejemplos/002_Portico/ejemplo14_verificacion.txt
+
+PROYECTO
+proyecto;Ejemplo 14 - Portico biempotrado
+unidad_fuerza;N
+unidad_longitud;mm
+tipo;portico
+
+NODOS
+id;x;y
+1;0;0
+2;0;4000
+3;6000;4000
+4;6000;0
+
+MATERIALES
+id;E;nu;fy;teoria
+acero;210000;0,3;235;vm
+
+SECCIONES
+id;tipo;h;b;tf;tw
+perfil;doble_t;200;100;8;5
+
+BARRAS
+id;nodo_i;nodo_j;material;seccion;art_i;art_j;pandeo
+C1;1;2;acero;perfil;;;emp-lib
+V1;2;3;acero;perfil;;;
+C2;4;3;acero;perfil;;;emp-lib
+
+APOYOS
+nodo;ux;uy;phi
+1;1;1;1
+4;1;1;1
+
+CARGAS
+caso;nodo;Px;Py;M
+V;2;10000;0;0
+
+CARGAS EN BARRAS
+caso;barra;tipo;valor;valor2;a;b
+Q;V1;qgy;-10;;;
+
+COMBINACIONES
+combinacion;caso;factor
+Q+V;Q;1
+Q+V;V;1

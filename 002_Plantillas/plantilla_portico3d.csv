@@ -1,0 +1,133 @@
+# ======================================================================================
+# PLANTILLA - PÓRTICO ESPACIAL 3D   (copiar, renombrar y completar)
+# Un solo archivo con BLOQUES: una línea con el título, luego los encabezados y los datos.
+# Líneas vacías y líneas que empiezan con # se ignoran.  Vale ';' con coma decimal (Excel) o ',' con punto.
+# Sistema de unidades coherente (por ej. N, mm, MPa  o  kN, cm, kN/cm²).
+# Ejes globales X, Y, Z (terna derecha, Z ARRIBA).  6 GDL por nudo: ux uy uz phix phiy phiz (giros por mano derecha).
+# Las cargas gravitatorias son NEGATIVAS (en Z).  Barra: x local de nodo_i a nodo_j.
+# Eje z local (por defecto): +Z global proyectado; en barras verticales: +X global.  Cambiarlo con rx;ry;rz o 'giro'.
+# Esta plantilla es un modelo válido (mesa: 4 patas y 4 travesaños): se puede calcular tal cual.
+# Nudos rígidos por defecto; las articulaciones se piden por barra (columnas art_i / art_j de BARRAS).  Incluye tensor de tensiones y criterios de falla (ver MATERIALES y PUNTOS DE TENSION).
+# ======================================================================================
+
+PROYECTO
+proyecto;Plantilla portico espacial
+autor;
+unidad_fuerza;N
+unidad_longitud;mm
+tipo;portico3d
+# escala_deformada;auto        (o un número)
+# escala_diagramas;barra        (barra = cada barra a su escala, se ve bien aunque sea chica | global = una sola escala para comparar; en el visor hay una casilla "escala única")
+# csv_salida;excel_es          (excel_es = ';' y coma decimal | estandar)
+# corte_tensiones;si           (si = el tensor incluye el corte de flexión (Jourawski) | no)
+# anexo_matrices;si            (si = incluye las matrices de rigidez en el informe | no)
+# peso_propio;PP               (agrega al caso PP el peso propio de todas las barras: necesita 'rho' en MATERIALES)
+# gravedad;-z                  (dirección de la gravedad: -z por defecto; ±x, ±y, ±z)
+
+# --- NODOS (obligatorio)
+NODOS
+id;x;y;z
+1;0;0;0
+2;2000;0;0
+3;2000;1000;0
+4;0;1000;0
+5;0;0;800
+6;2000;0;800
+7;2000;1000;800
+8;0;1000;800
+
+# --- MATERIALES (obligatorio): E y (G o nu).  Opcionales: fy, sadm, alfa, sut, suc, teoria, rho (densidad en kg/m³, para el peso propio).
+#     teoria (criterio de falla que gobierna el CS): vm (Von Mises, por defecto si hay fy) | tresca | rankine | mohr (dúctil con |σc| > σt) | mohrmod (Mohr modificado: frágil con |σc| > σt, p. ej. fundición).
+#     lib (opcional): NÚMERO de un material de la biblioteca personal (ej. lib;1): completa E, G, nu, fy, sut y rho; lo cargado a mano en otra columna manda.
+#       Las fichas las carga Claude en 006_Biblioteca/materiales.csv (ver Struttura_Memoria_biblioteca.html);  --biblioteca listar muestra los números
+#     rankine, mohr y mohrmod necesitan sut (tracción); suc (compresión) por defecto = sut.  El informe muestra todas las teorías aplicables.
+MATERIALES
+id;E;nu;fy;teoria
+acero;210000;0.3;235;vm
+
+# --- SECCIONES (obligatorio).  tipo:
+#     tubo (d,t) | circular (d) | rectangular (b,h) | rect_hueca (b,h,t) | generica (A,Iy,Iz,J  [+ cy,cz,Wt para tensiones])
+#     perfiles abiertos de pared delgada (dimensiones de LÍNEA MEDIA): canal (h,b,t | tf,tw) | doble_t (h,b,tf,tw) | te (h,b,tf,tw) | z (h,b,tf,tw) | angular (b,h,t)
+#       canal: alma vertical en y<0 y alas hacia +y;  te: ala arriba;  angular y z: los ejes y,z locales son los principales (el programa gira la sección)
+#     Iy: flexión alrededor de y local (flecha en z local).  Iz: alrededor de z local (flecha en y local).
+#     rectangular/rect_hueca: b = medida según y local, h = medida según z local (por defecto h queda VERTICAL).
+SECCIONES
+id;tipo;d;t;b;h;tf;tw;A;Iy;Iz;J;cy;cz
+pata;tubo;50.8;3;;;;;;;;;;
+trav;rectangular;;;40;60;;;;;;;;
+
+# --- BARRAS (obligatorio).  rx;ry;rz (opcional): vector (globales) hacia donde apunta z local.  giro (opcional): grados.
+#     pandeo (opcional, agregar la columna): art-art (defecto) | emp-lib | emp-art | emp-emp  → CS pandeo de Euler (menor inercia) en barras comprimidas.
+#     art_i / art_j (opcional): articulación en ese extremo.  1 = rótula esférica (libera My y Mz; transmite N, Vy, Vz y T);
+#     o bien my / mz / t, combinables con '+' (ej.: my+t).  Si todas las barras de un nudo están articuladas, el giro del nudo es
+#     indeterminado y el programa lo estabiliza solo (con aviso).  Ejemplo completo: 003_Ejemplos/004_Portico_espacial/ejemplo5_*.csv
+BARRAS
+id;nodo_i;nodo_j;material;seccion
+P1;1;5;acero;pata
+P2;2;6;acero;pata
+P3;3;7;acero;pata
+P4;4;8;acero;pata
+T1;5;6;acero;trav
+T2;6;7;acero;trav
+T3;7;8;acero;trav
+T4;8;5;acero;trav
+
+# --- APOYOS (obligatorio): 1 = GDL restringido.   Empotrado 1;1;1;1;1;1 | Articulado 1;1;1;0;0;0
+APOYOS
+nodo;ux;uy;uz;phix;phiy;phiz
+1;1;1;1;1;1;1
+2;1;1;1;1;1;1
+3;1;1;1;1;1;1
+4;1;1;1;1;1;1
+
+# --- RESORTES (opcional): rigidez en ejes globales [fuerza/longitud; momento/rad].
+# RESORTES
+# nodo;kx;ky;kz;kphix;kphiy;kphiz
+
+# --- CARGAS (opcional): cargas en nudos, ejes globales.
+CARGAS
+caso;nodo;Fx;Fy;Fz;Mx;My;Mz
+VIENTO;5;500;0;0;0;0;0
+VIENTO;8;500;0;0;0;0;0
+
+# --- CARGAS EN BARRAS (opcional).  tipo:
+#     qx qy qz  (distribuida LOCAL) | qgx qgy qgz  (distribuida GLOBAL, por unidad de longitud de barra)
+#     Px Py Pz  (puntual local) | Pgx Pgy Pgz  (puntual global) | Mx My Mz  (momento puntual local) | Mgx Mgy Mgz (global)
+#     valor = en i, valor2 = en j (vacío = uniforme, solo q).  a = distancia desde nodo_i (solo puntuales y momentos).
+CARGAS EN BARRAS
+caso;barra;tipo;valor;valor2;a
+PESO;T1;qgz;-1.5;;
+PESO;T2;qgz;-1.5;;
+PESO;T3;qgz;-1.5;;
+PESO;T4;qgz;-1.5;;
+PESO;T1;Pgz;-2000;;1000
+
+# --- PUNTOS DE TENSION (opcional): puntos donde querés el tensor de tensiones completo (σ, τ, principales, criterios, CS).
+#     x = distancia desde nodo_i;  y, z = coordenadas LOCALES en la sección desde el baricentro (vacío = 0);  caso vacío = todos los casos.
+#     Además el informe da siempre los puntos más exigidos, elegidos automáticamente.
+PUNTOS DE TENSION
+id;barra;x;y;z;caso
+pata_base_borde;P1;0;25.4;0;SERVICIO
+centro_travesano;T1;1000;0;30;PESO
+
+# --- DESPLAZAMIENTOS PREFIJADOS (opcional): solo en GDL restringidos en APOYOS (asentamientos).
+# DESPLAZAMIENTOS PREFIJADOS
+# caso;nodo;ux;uy;uz;phix;phiy;phiz
+
+# --- COMBINACIONES (opcional)
+COMBINACIONES
+combinacion;caso;factor
+SERVICIO;PESO;1
+SERVICIO;VIENTO;1
+
+# --- SOLDADURAS (opcional): verifica la soldadura en el extremo i o j de una barra con los esfuerzos del solver, para cada caso y combinación.
+#     Sin w: calcula el pie de filete REQUERIDO.  Con w: da el coeficiente de seguridad.  Disposiciones, parámetros y fórmulas:
+#     002_Plantillas/plantilla_soldadura.csv y 004_Documentacion/002_Memorias/Struttura_Memoria_soldadura.html
+#     tipo;esp: filete (defecto) o tope; en tope esp = espesor de las piezas (por defecto el de la pared del tubo / tubo rectangular de la barra).
+#     circulo toma d del tubo; rectangulo / costados / arriba_abajo toman b y h de la sección rectangular.  oy;oz = posición del origen de la disposición respecto del baricentro de la barra.
+#SOLDADURAS
+#id;barra;extremo;disposicion;b;d;electrodo;w;sy_base;t_gruesa;t_fina
+#empotramiento;B1;i;circulo;;;E70;;460;2;2
+
+# --- SOLDADURAS / ELECTRODOS: además de las columnas de la Memoria de soldadura, sy_base puede venir de la biblioteca con  lib;N  (fy del material N);
+#     un electrodo que no está en ELECTRODOS se busca en 006_Biblioteca/electrodos.csv y luego en la tabla de Shigley.  ELECTRODOS: id;sut;sy;tau_adm;lib

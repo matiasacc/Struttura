@@ -1,0 +1,35 @@
+# EJEMPLO 12 - Voladizo en L de tubo 50 x 3 con soldadura de filete en el empotramiento (bloque SOLDADURAS).
+
+PROYECTO
+proyecto;Voladizo en L de tubo 50 x 3 con soldadura de filete en el empotramiento
+unidad_fuerza;N
+unidad_longitud;mm
+tipo;emparrillado
+NODOS
+id;x;y
+1;0;0
+2;1000;0
+3;1000;800
+MATERIALES
+id;E;nu
+A;210000;0,3
+SECCIONES
+id;tipo;d;t
+T;tubo;50;3
+BARRAS
+id;nodo_i;nodo_j;material;seccion
+1;1;2;A;T
+2;2;3;A;T
+APOYOS
+nodo;uz;phix;phiy
+1;1;1;1
+CARGAS
+caso;nodo;Pz;Mx;My
+c;3;-500;0;0
+
+# --- SOLDADURAS: cordón de filete alrededor del tubo, en el extremo i de la barra 1 (empotramiento).
+# Los esfuerzos salen del solver (cada caso y combinación); el programa verifica el cordón como grupo de líneas (método de la garganta).
+# sy_base = fluencia del metal base [MPa]; en lugar de escribirla se puede usar lib;N (fy del material N de 006_Biblioteca/materiales.csv).
+SOLDADURAS
+id;barra;extremo;disposicion;electrodo;w;sy_base;t_gruesa;t_fina
+S1;1;i;circulo;E70;4;235;6;6

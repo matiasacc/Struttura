@@ -1,0 +1,51 @@
+# TP5 2022 1er C, Ejercicio 1 (Cálculo Estructural I).  Unidades: N y mm.
+# Resorte INCLINADO en el nudo 2 (k = 200 N/mm, dirección (0,8; 0,6) => ángulo 36,87°, perpendicular a la barra 2-3),
+# giro prefijado en el nudo 1 (phi = -0,004 rad) y desplazamiento vertical prefijado en el nudo 2 (uy = -3 mm).
+# Resultados de la cátedra (Porti): u1y = 1,9242; u2x = -0,0289; phi2 = 0,0068; u3x = 3,9043;
+#   barra 1-2: N = -9708,3  V = 10000  M1 = 5,3404e6  M2 = 1,466e7;   barra 2-3: N = -13459,3  V = 2405,6
+#   fuerza del resorte = 364,62 N (tracción).
+PROYECTO
+proyecto;TP5 2022 - Ejercicio 1 (resorte inclinado y prefijados)
+unidad_fuerza;N
+unidad_longitud;mm
+tipo;portico
+
+NODOS
+id;x;y
+1;0;1600
+2;2000;1600
+3;3200;0
+
+MATERIALES
+id;E;nu;fy
+acero;210000;0.3;250
+
+SECCIONES
+id;tipo;b;h;t
+s;rect_hueca;80;100;10
+
+BARRAS
+id;nodo_i;nodo_j;material;seccion
+1;1;2;acero;s
+2;2;3;acero;s
+
+APOYOS
+nodo;ux;uy;phi
+1;1;0;1
+2;0;1;0
+3;0;1;1
+
+RESORTES INCLINADOS
+nodo;k;angulo
+2;200;36.8699
+
+CARGAS
+caso;nodo;Px;Py;M
+C;1;0;10000;0
+C;2;0;0;20000000
+C;3;-10000;0;0
+
+DESPLAZAMIENTOS PREFIJADOS
+caso;nodo;ux;uy;phi
+C;1;0;0;-0.004
+C;2;0;-3;0

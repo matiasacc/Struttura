@@ -1,0 +1,49 @@
+# Reticulado plano del 1er parcial, 2do semestre 2020 (Brewer, Cálculo Estructural I).  Unidades: kg y cm.
+# Todas las barras articuladas en ambos extremos (art_i = art_j = 1) => trabajan solo a axil.
+# Barra 1: 1-3 con ΔT uniforme +40 °C.  Barra 2: 2-3 con q = 10 kg/cm AXIAL hacia abajo (+xl porque va de 2 a 3).
+# Nudo 3: P = 1000 kg hacia +y y apoyo que impide ux.  Nudo 1: uy prefijado = +0,06 cm (ux libre).  Nudo 2: fijo.
+# Resultados del examen: u1x = -0,0124; u3y = 0,0088; F1 = -406,6 kg; F3 = 325,5 kg; R1y = 244 kg.
+PROYECTO
+proyecto;Reticulado parcial 2020
+unidad_fuerza;kg
+unidad_longitud;cm
+tipo;portico
+
+NODOS
+id;x;y
+1;0;90
+2;120;90
+3;120;0
+
+MATERIALES
+id;E;alfa
+m;2100000;0.00001
+
+SECCIONES
+id;tipo;I;A
+s;generica;1;1.5
+
+BARRAS
+id;nodo_i;nodo_j;material;seccion;art_i;art_j
+1;1;3;m;s;1;1
+2;2;3;m;s;1;1
+3;1;2;m;s;1;1
+
+APOYOS
+nodo;ux;uy;phi
+1;0;1;0
+2;1;1;0
+3;1;0;0
+
+CARGAS
+caso;nodo;Px;Py;M
+E;3;0;1000;0
+
+CARGAS EN BARRAS
+caso;barra;tipo;valor;valor2;a;b
+E;1;temp;40;40;;
+E;2;qa;10;;;
+
+DESPLAZAMIENTOS PREFIJADOS
+caso;nodo;ux;uy;phi
+E;1;0;0.06;0

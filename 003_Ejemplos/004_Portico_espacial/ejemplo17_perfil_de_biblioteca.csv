@@ -1,0 +1,40 @@
+# Voladizo de 2 m con un perfil IPE 200 tomado de la biblioteca de perfiles (tablas CIRSOC 301/302).
+# En SECCIONES solo va tipo;perfil y el NÚMERO del perfil en la columna 'lib' (103 = IPE 200): A, Iy, Iz, J, cy, cz salen de las tablas, en las unidades del modelo.
+# Lo que se escriba a mano en una columna manda sobre la biblioteca.  El perfil se orienta con la altura d sobre el eje z (flexión alrededor de y).
+# Los números están en 006_Biblioteca/perfiles.csv (columna n); python struttura.py --biblioteca perfiles IPE los muestra.
+PROYECTO
+proyecto;Voladizo con perfil de biblioteca
+unidad_fuerza;N
+unidad_longitud;mm
+tipo;portico3d
+peso_propio;PP
+
+NODOS
+id;x;y;z
+1;0;0;0
+2;2000;0;0
+
+MATERIALES
+id;E;nu;fy;rho
+acero;210000;0.3;235;7850
+
+SECCIONES
+id;tipo;lib
+IPE 200;perfil;103
+
+BARRAS
+id;nodo_i;nodo_j;material;seccion
+B1;1;2;acero;IPE 200
+
+APOYOS
+nodo;ux;uy;uz;phix;phiy;phiz
+1;1;1;1;1;1;1
+
+CARGAS
+caso;nodo;Fx;Fy;Fz;Mx;My;Mz
+carga;2;0;0;-5000;0;0;0
+
+COMBINACIONES
+combinacion;caso;factor
+SERVICIO;PP;1
+SERVICIO;carga;1

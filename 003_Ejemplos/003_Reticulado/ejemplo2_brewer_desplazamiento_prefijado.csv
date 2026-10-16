@@ -1,0 +1,46 @@
+# Brewer, Reticulado plano, Ejercicio N° 2.  Unidades: kg y cm.
+# L = 100 cm en las tres barras, A = 1,5 cm², E = 2,1e6 kg/cm², P = 4000 kg a 30° bajo la horizontal en el nudo 4 (Px = 3464,1; Py = -2000).
+# Nudos 1, 2 y 3: apoyos fijos.  Nudo 4: apoyo móvil (impide uy).
+# Igual al ejercicio 1, pero el nudo 2 tiene un desplazamiento vertical prefijado de +0,08 cm.
+# Resultados del libro: u4x = 0,0742 cm;  N = 2337 / 357 / 1402 kg;  sigma = 1158 / 239 / 935 kg/cm²;  R4y = 3336 kg.
+PROYECTO
+proyecto;Brewer - Reticulado plano - Ejercicio 2
+unidad_fuerza;kg
+unidad_longitud;cm
+tipo;reticulado
+
+NODOS
+id;x;y
+1;0;0
+2;20;-60
+3;40;-80
+4;100;0
+
+MATERIALES
+id;E
+m;2100000
+
+SECCIONES
+id;tipo;A
+s;generica;1.5
+
+BARRAS
+id;nodo_i;nodo_j;material;seccion
+1;1;4;m;s
+2;2;4;m;s
+3;3;4;m;s
+
+APOYOS
+nodo;ux;uy
+1;1;1
+2;1;1
+3;1;1
+4;0;1
+
+CARGAS
+caso;nodo;Px;Py
+P;4;3464.1016;-2000
+
+DESPLAZAMIENTOS PREFIJADOS
+caso;nodo;ux;uy
+P;2;0;0.08

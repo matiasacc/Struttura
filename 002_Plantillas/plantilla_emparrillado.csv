@@ -1,0 +1,106 @@
+# ======================================================================================
+# PLANTILLA - EMPARRILLADO PLANO   (copiar, renombrar y completar)
+# Estructura en el plano XY cargada PERPENDICULARMENTE a su plano.  GDL por nodo: uz, phix, phiy.
+# Un solo archivo con BLOQUES (línea con el título, encabezados, datos).  Líneas vacías y con # se ignoran.
+# Vale ';' con coma decimal (Excel) o ',' con punto.  Unidades coherentes (por ej. N, mm, MPa).
+# Ejes globales: X → derecha, Y ↑, z hacia el lector.  Pz > 0 hacia +z: la gravedad es NEGATIVA.
+# Barra: xl de nodo_i a nodo_j, yl a 90° antihorario, z común.
+# Esta plantilla es un modelo válido (voladizo en L): se puede calcular tal cual.
+# ======================================================================================
+
+# --- PROYECTO (opcional).  tipo;emparrillado es lo que elige el programa de emparrillado.
+PROYECTO
+proyecto;Plantilla emparrillado
+autor;
+unidad_fuerza;N
+unidad_longitud;mm
+tipo;emparrillado
+# peso_propio;PP        (agrega al caso PP el peso propio de todas las barras: necesita 'rho' en MATERIALES; si no se escribe, no se calcula)
+# gravedad;-z          (dirección de la gravedad: ±z; por defecto -z)
+# escala_deformada;auto
+# escala_diagramas;barra        (barra | global)
+# anexo_matrices;si             (si = incluye las matrices de rigidez en el informe | no)
+# csv_salida;excel_es           (excel_es | estandar)
+
+NODOS
+id;x;y
+1;0;0
+2;2000;0
+3;2000;1500
+
+# --- MATERIALES: E y (G o nu); fy, sadm opcionales; alfa solo para temperatura.  Criterio de falla: sut, suc, teoria = vm (defecto) | tresca | rankine | mohr | mohrmod.
+#     rho (opcional): densidad en kg/m³, solo para el peso propio (la ficha de la biblioteca también la trae).
+#     lib (opcional): NÚMERO de un material de tu biblioteca (ej. lib;1): completa E, nu o G y fy; lo cargado a mano en otra columna manda (ver Struttura_Memoria_biblioteca.html)
+MATERIALES
+id;E;nu;G;fy;sadm;alfa
+acero;210000;0.3;;235;140;0.000012
+
+# --- SECCIONES.  tipo: tubo (d,t) | circular (d) | rectangular (b,h) | rect_hueca (b,h,t) | generica (I,J + A,c,Wt,kv opcionales)
+#     perfiles abiertos de pared delgada (línea media): canal | doble_t | te | z | angular  con h, b, t (o tf y tw); h vertical
+#     En rectangulares h es la dimensión VERTICAL (z).  h se usa también en gradientes térmicos.
+SECCIONES
+id;tipo;d;t;b;h;I;J;A;c;Wt;kv
+tubo;tubo;60;4;;;;;;;;
+
+# --- BARRAS (obligatorio).  art_i / art_j (opcional): vacío = rígido, m = articulación de flexión, t = de torsión, mt = ambas.
+BARRAS
+id;nodo_i;nodo_j;material;seccion;art_i;art_j
+1;1;2;acero;tubo;;
+2;2;3;acero;tubo;;
+
+# --- APOYOS: 1 = restringido.
+APOYOS
+nodo;uz;phix;phiy
+1;1;1;1
+
+# --- RESORTES (opcional): kz [fuerza/long], kphix, kphiy [momento/rad].
+# RESORTES
+# nodo;kz;kphix;kphiy
+# 3;500;;
+
+# --- RESORTES GIRO INCLINADO (opcional): resorte de torsión con eje en el plano a 'angulo' grados de +X.
+# RESORTES GIRO INCLINADO
+# nodo;k;angulo
+# 3;2e6;45
+
+# --- CARGAS (opcional): Pz [fuerza], Mx, My [momento, vectores de mano derecha], ejes globales.
+CARGAS
+caso;nodo;Pz;Mx;My
+P;3;-500;0;0
+
+# --- CARGAS EN BARRAS (opcional): caso;barra;tipo;valor;valor2;a;b   (a, b desde nodo_i)
+#     q     distribuida en z (valor en a, valor2 en b; valor2 vacío = uniforme; a,b vacíos = toda la barra)
+#     P     puntual en z en la posición a
+#     temp  gradiente térmico: valor = ΔT fibra superior, valor2 = ΔT fibra inferior [°C]
+CARGAS EN BARRAS
+caso;barra;tipo;valor;valor2;a;b
+PP;1;q;-0.05;;;
+PP;2;q;-0.05;;;
+# L;1;P;-300;;1000;
+# T;2;temp;30;0;;
+
+# --- DESPLAZAMIENTOS PREFIJADOS (opcional): solo en GDL restringidos.
+# DESPLAZAMIENTOS PREFIJADOS
+# caso;nodo;uz;phix;phiy
+# ASENT;1;-5;0;0
+
+# --- DESAJUSTE DE RESORTES (opcional): e del apoyo del resorte recto (fuerza = -k(u-e)); más corto → e < 0.
+# DESAJUSTE DE RESORTES
+# caso;nodo;uz;phix;phiy
+# MONTAJE;3;-5;;
+
+COMBINACIONES
+combinacion;caso;factor
+1.4PP;PP;1.4
+1.2PP+1.6P;PP;1.2
+1.2PP+1.6P;P;1.6
+
+# --- SOLDADURAS (opcional): verifica un cordón en el extremo i o j de una barra con los esfuerzos del solver (cada caso y combinación).
+#     Emparrillado: toma V, T y M del extremo.  Disposiciones: circulo, arco, rectangulo, costados, arriba_abajo, linea, L, C, ...  (ver Memoria de soldadura)
+#     sy_base = fluencia del metal base [MPa]; o lib;N = fy del material N de la biblioteca de materiales (lo escrito a mano manda).
+#     electrodo: se busca en ELECTRODOS, luego en 006_Biblioteca/electrodos.csv, luego en la tabla de Shigley (E60 ... E120).
+# SOLDADURAS
+# id;barra;extremo;disposicion;electrodo;w;sy_base;lib;t_gruesa;t_fina
+# S1;1;i;circulo;E70;4;235;;6;6
+# ELECTRODOS
+# id;sut;sy;tau_adm;lib

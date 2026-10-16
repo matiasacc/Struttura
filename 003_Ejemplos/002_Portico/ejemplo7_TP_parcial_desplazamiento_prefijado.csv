@@ -1,0 +1,42 @@
+# 1er parcial (Cálculo Estructural I): momento en el nudo 2 y desplazamiento vertical prefijado en el nudo 3.  Unidades: N y mm.
+# Nudo 1 empotrado; nudo 2 apoyo fijo en y (ux y phi libres); nudo 3: ux = 0, phi = 0 y uy prefijado = 0,6 mm.
+# Resultados de la cátedra: u2x = -0,0062; phi2 = 0,0042;  barra 1-2 (local): Pi = 703,08  Vi = 1982,16  Mi = 1320656  Mj = 2643656;
+#   barra 2-3: N = 1171,8 (tracción; F2x = -1171,8)  V = 1701  M2 = 2362500  M3 = 1039500;  reacción vertical en 2 = -50,6 N.
+PROYECTO
+proyecto;Parcial - momento y desplazamiento prefijado
+unidad_fuerza;N
+unidad_longitud;mm
+tipo;portico
+
+NODOS
+id;x;y
+1;0;0
+2;1200;1600
+3;3200;1600
+
+MATERIALES
+id;E;nu
+acero;210000;0.3
+
+SECCIONES
+id;tipo;I;A;h
+s;generica;1500000;1800;100
+
+BARRAS
+id;nodo_i;nodo_j;material;seccion
+1;1;2;acero;s
+2;2;3;acero;s
+
+APOYOS
+nodo;ux;uy;phi
+1;1;1;1
+2;0;1;0
+3;1;1;1
+
+CARGAS
+caso;nodo;Px;Py;M
+C;2;0;0;5000000
+
+DESPLAZAMIENTOS PREFIJADOS
+caso;nodo;ux;uy;phi
+C;3;0;0.6;0

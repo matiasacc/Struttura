@@ -1,0 +1,52 @@
+# Ménsula con dos materiales de la biblioteca (006_Biblioteca/materiales.csv):
+#   columna de tubo rectangular 40 x 60 x 3 mm  -> material 2: AISI 1020 Steel, cold rolled
+#   brazo de tubo 38,1 x 2,5 mm, 500 mm          -> material 1: AISI 1010 Steel, cold drawn
+# En MATERIALES solo va el número (lib). Aquí además se pisa a mano el módulo E del material 1 (columna e: lo cargado a mano manda sobre la ficha)
+# para mostrar la prioridad.  Cargas en la punta del brazo: 800 N hacia abajo y 200 N lateral. Peso propio incluido.
+# Soldaduras: base de la columna (filete rectángulo) y unión del brazo (filete círculo).  sy_base se carga a mano (la biblioteca todavía no alimenta la soldadura):
+# 350 MPa es el fy de la ficha n.º 2 y 305 MPa el de la n.º 1.
+PROYECTO
+proyecto;Ménsula con materiales de la biblioteca
+unidad_fuerza;N
+unidad_longitud;mm
+tipo;portico3d
+peso_propio;PP
+
+NODOS
+id;x;y;z
+1;0;0;0
+2;0;0;600
+3;500;0;600
+
+MATERIALES
+id;lib;e
+columna_1020;2;
+brazo_1010;1;200000
+
+SECCIONES
+id;tipo;d;t;b;h
+columna;rect_hueca;;3;40;60
+brazo;tubo;38.1;2.5;;
+
+BARRAS
+id;nodo_i;nodo_j;material;seccion
+B1;1;2;columna_1020;columna
+B2;2;3;brazo_1010;brazo
+
+APOYOS
+nodo;ux;uy;uz;phix;phiy;phiz
+1;1;1;1;1;1;1
+
+CARGAS
+caso;nodo;Fx;Fy;Fz;Mx;My;Mz
+carga;3;0;200;-800;0;0;0
+
+COMBINACIONES
+combinacion;caso;factor
+SERVICIO;PP;1
+SERVICIO;carga;1
+
+SOLDADURAS
+id;barra;extremo;tipo;disposicion;electrodo;sy_base;esp;w;t_gruesa;t_fina
+base;B1;i;filete;rectangulo;E70;350;3;4;12;3
+union;B2;i;filete;circulo;E70;305;2.5;;3;2.5

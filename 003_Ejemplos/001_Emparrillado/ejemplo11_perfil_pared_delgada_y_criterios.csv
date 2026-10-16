@@ -1,0 +1,35 @@
+# EJEMPLO 11 - Perfil de pared delgada (canal, línea media) con torsión y corte, y criterio de falla por material.
+# L en voladizo: la barra 1 trabaja a flexión y torsión.  Barra 1: canal (h = 100 vertical).  Material: criterio de Tresca.
+# Con el corte aplicado fuera del centro de corte aparece torsión adicional [propio] (ver Memoria).
+
+PROYECTO
+proyecto;Ejemplo 8 - Canal y Tresca
+unidad_fuerza;N
+unidad_longitud;mm
+
+NODOS
+id;x;y
+1;0;0
+2;1000;0
+3;1000;800
+
+MATERIALES
+id;E;nu;fy;teoria
+acero;210000;0,3;235;tresca
+
+SECCIONES
+id;tipo;h;b;t
+canal;canal;100;50;4
+
+BARRAS
+id;nodo_i;nodo_j;material;seccion
+1;1;2;acero;canal
+2;2;3;acero;canal
+
+APOYOS
+nodo;uz;phix;phiy
+1;1;1;1
+
+CARGAS
+caso;nodo;Pz;Mx;My
+P;3;-500;0;0

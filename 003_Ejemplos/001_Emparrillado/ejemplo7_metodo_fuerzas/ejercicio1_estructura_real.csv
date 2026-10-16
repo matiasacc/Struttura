@@ -1,0 +1,45 @@
+# EJERCICIO 1 - Método de las fuerzas (barra inclinada 30° en el plano xy, resorte vertical k en el nudo 1).
+# Ejes: x, y en el plano horizontal, z hacia arriba (terna derecha, igual que el dibujo). La barra forma alfa = 30° con el eje x.
+# Nudo 1 (x = L·cos30°, y = 0) | nudo 2 (x = 0, y = L·sen30°).  q = 2 N/mm hacia -z sobre toda la barra (gravedad = negativa).
+# Nudo 1: giro alrededor de y impedido + resorte vertical k = 5 N/mm.  Nudo 2: uz y giro alrededor de x impedidos.
+# E = 210 GPa, G = 80 GPa, I = 128720 mm4, J = 192000 mm4, L = 1 m, h = 10 mm.
+
+PROYECTO
+proyecto;Ejercicio 1 - Estructura real (hiperestática)
+unidad_fuerza;N
+unidad_longitud;mm
+
+NODOS
+id;x;y
+1;866.025404;0
+2;0;500
+
+MATERIALES
+id;E;nu;G;fy;sadm
+MAT;210000;;80000;;
+
+SECCIONES
+id;tipo;d;t;b;h;I;J;A;c;Wt;kv
+S1;generica;;;;10;128720;192000;;5;;
+
+BARRAS
+id;nodo_i;nodo_j;material;seccion
+1;1;2;MAT;S1
+
+APOYOS
+nodo;uz;phix;phiy
+1;;;1
+2;1;1;
+
+RESORTES
+nodo;kz;kphix;kphiy
+1;5;;
+
+CARGAS
+caso;nodo;Pz;Mx;My
+
+
+CARGAS EN BARRAS
+caso;barra;tipo;valor;valor2;a;b
+Q;1;q;-2;;;
+
