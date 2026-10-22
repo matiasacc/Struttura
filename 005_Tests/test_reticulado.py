@@ -237,6 +237,19 @@ S;2;0;-2
         self.assertIn("línea 20", str(cm.exception))
 
 
+class TestVisorSoloAxil(unittest.TestCase):
+    def test_el_visor_del_reticulado_no_trae_corte_ni_flector(self):
+        import re
+        import subprocess
+        raiz = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as d:
+            subprocess.run([sys.executable, str(raiz / "struttura.py"), str(raiz / "003_Ejemplos" / "003_Reticulado" / "ejemplo1_brewer_carga_nodal.csv"), "-o", d],
+                           capture_output=True, check=True)
+            h = (Path(d) / "informe.html").read_text(encoding="utf-8")
+        self.assertIn('"dia": {"N"', h)
+        self.assertFalse(re.search(r'"dia": \{[^{]*?"V":', h))
+
+
 if __name__ == "__main__":
     unittest.main()
 

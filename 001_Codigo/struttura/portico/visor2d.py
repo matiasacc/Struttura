@@ -204,7 +204,7 @@ function emp2d(id, D) {
     var hayDia = D.escenas.some(function (e) { return e.dia; }), hayDef = D.escenas.some(function (e) { return e.def; }), hayUtil = D.escenas.some(function (e) { return e.vm; });
     h += "<button data-v='ini'>Ajustar</button><br>";
     h += "<label>Modo: <select data-r='modo'><option value='est'>Estructura</option><option value='carg' selected>Cargas</option>" + (hayDef ? "<option value='def'>Deformada</option>" : "") + (hayUtil ? "<option value='util'>Utilizaci\u00f3n</option>" : "") +
-         (hayDia ? "<option value='N'>N (axil)</option><option value='V'>V (corte)</option><option value='M'>M (flector)</option>" : "") + "</select></label> ";
+         (hayDia ? "<option value='N'>N (axil)</option>" + (D.ret ? "" : "<option value='V'>V (corte)</option><option value='M'>M (flector)</option>") : "") + "</select></label> ";
     h += "<label>Barra: <select data-r='barra' disabled><option value='-1'>todas</option>" + D.bid.map(function (b, i) { return "<option value='" + i + "'>" + b + "</option>"; }).join("") + "</select></label> ";
     if (hayDia) h += "<label><input type='checkbox' data-s='unica'> escala única</label>";
     if (hayUtil) h += "<label>Color seg\u00fan: <select data-r='base'><option value='fy'>" + (D.refn[0] || "fy") + "</option><option value='sadm'>\u03c3adm</option></select></label> ";
@@ -260,7 +260,7 @@ def _escena(modelo, e: dict) -> dict:
                         for cur in elastica(modelo, res, n=25)]}
         esf = esfuerzos(modelo, res, n=41)
         dia = {k: [{"x": [float(v) for v in cv["x"]], "v": [float(v) for v in cv[k]]} for cv in esf["curvas"]]
-               for k in ("N", "V", "M")}
+               for k in (("N",) if hasattr(modelo, "ret_pandeo") else ("N", "V", "M"))}      # reticulado: solo axil
         vm = []                                          # σeq a lo largo de cada barra (21 puntos) para el modo Utilización
         for k, tk in enumerate(tensiones(modelo, esf)):
             vm.append(None if tk.get("curva_vm") is None else
