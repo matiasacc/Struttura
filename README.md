@@ -1,4 +1,4 @@
-# Struttura – estructuras por el método matricial de rigidez (v1.1.13)
+# Struttura –  cálculo de estructuras por el método matricial de rigidez (v1.1.13)
 
 Cuatro programas en Python bajo un mismo comando, `python struttura.py ARCHIVO.csv`, con **una plantilla de CSV para cada uno**:
 
