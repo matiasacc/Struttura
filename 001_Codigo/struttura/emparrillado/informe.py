@@ -129,7 +129,7 @@ def _cabecera(modelo, U, titulo_doc):
                         + (f", {len(modelo.combinaciones)} combinación(es)" if modelo.combinaciones else "")]]
     p.append(tabla(["Dato", "Valor"], filas, clase="datos"))
     for a in modelo.avisos:
-        p.append(f'<div class="aviso"><b>Aviso:</b> {e_(a)}</div>')
+        p.append(f'<p class="nota">{e_(a)}</p>' if a.startswith("Nota: ") else f'<div class="aviso"><b>Aviso:</b> {e_(a)}</div>')
     return p
 
 

@@ -96,7 +96,7 @@ table.t td.acc button:hover{color:var(--error);background:none}
 @media (prefers-color-scheme: dark){.chip.ok{background:#1c3324}}
 #estado-detalle{overflow:auto;white-space:pre-wrap;font-family:var(--mono);font-size:12px;margin-top:4px}
 #estado-detalle:empty{display:none}
-#estado-detalle .err{color:var(--error)}#estado-detalle .av{color:var(--aviso)}
+#estado-detalle .err{color:var(--error)}#estado-detalle .av{color:var(--aviso)}#estado-detalle .nt{color:var(--apagado)}
 #estado-detalle a{color:var(--acento)}
 
 #modal{position:fixed;inset:0;background:rgba(0,0,0,.38);display:flex;align-items:center;justify-content:center;z-index:10}

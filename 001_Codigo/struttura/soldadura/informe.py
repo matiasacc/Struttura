@@ -212,7 +212,7 @@ def generar_html(modelo, resultados_por_sol) -> str:
     U = {"F": uf, "L": ul, "M": f"{uf}·{ul}", "S": unidad_tension(uf, ul)}
     P = [f"<h1>Verificación de soldaduras</h1><div class='sub'>{e_(cfg['proyecto'])} · Struttura v{__version__} · {datetime.date.today():%d/%m/%Y}</div>"]
     for a in modelo.avisos:
-        P.append(f'<div class="aviso"><b>Aviso:</b> {e_(a)}</div>')
+        P.append(f'<p class="nota">{e_(a)}</p>' if a.startswith("Nota: ") else f'<div class="aviso"><b>Aviso:</b> {e_(a)}</div>')
     P.append("<p class='nota'>Convenciones: w = pie (cateto) del filete y t = 0,707·w = garganta (distancia desde la raíz perpendicular a la hipotenusa); x = eje de la barra (normal al plano de los cordones); y, z en el plano de los cordones; N tracción +; "
              "T = momento alrededor de x. Las fórmulas y fuentes usadas están en la Memoria del programa de soldaduras.</p>")
     for s in modelo.soldaduras:

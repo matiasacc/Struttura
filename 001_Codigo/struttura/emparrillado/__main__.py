@@ -97,7 +97,7 @@ def main(argv=None) -> int:
         print(f"\nERROR EN LOS DATOS DE ENTRADA\n  {e}\n", file=sys.stderr)
         return 1
     for av in modelo.avisos:
-        print(f"Aviso: {av}")
+        print(av if av.startswith("Nota: ") else f"Aviso: {av}")
 
     ruta = Path(a.archivo)
     salida = Path(a.salida) if a.salida else ruta.with_name(ruta.stem + "_salida")

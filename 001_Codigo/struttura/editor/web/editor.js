@@ -651,7 +651,7 @@ function renderEstado() {
   const ln = $('#estado-linea'); ln.textContent = '';
   const r = S.rev;
   if (!r) ln.append(el('span', { class: 'chip n' }, 'Sin revisar'));
-  else if (r.ok) { ln.append(el('span', { class: 'chip ok' }, '✔ Modelo válido')); if (r.avisos.length) ln.append(el('span', { class: 'chip av' }, r.avisos.length + ' aviso(s)')); }
+  else if (r.ok) { ln.append(el('span', { class: 'chip ok' }, '✔ Modelo válido')); const nt = r.avisos.filter(a => a.startsWith('Nota: ')), av = r.avisos.length - nt.length; if (av) ln.append(el('span', { class: 'chip av' }, av + ' aviso(s)')); if (nt.length) ln.append(el('span', { class: 'chip n', title: 'Informativo: no es un error' }, nt.length + ' nota(s)')); }
   else ln.append(el('span', { class: 'chip mal' }, '✖ ' + (r.bloque ? r.bloque + (r.fila >= 0 ? ', fila ' + (r.fila + 1) : '') + ': ' : '') + r.error.split('\n')[0].slice(0, 160)));
   if (S.msg) ln.append(el('span', { class: 'chip av' }, S.msg));
   if (S.doc && esq().dim) for (const g of nodosDuplicados().slice(0, 3))
@@ -666,7 +666,8 @@ function renderEstado() {
   const det = $('#estado-detalle'); det.textContent = '';
   if (S.detalle) {
     if (r && !r.ok) det.append(el('div', { class: 'err' }, r.error + '\n'));
-    if (r && r.avisos.length) det.append(el('div', { class: 'av' }, r.avisos.map(a => 'Aviso: ' + a).join('\n') + '\n'));
+    if (r && r.avisos.length) { const av = r.avisos.filter(a => !a.startsWith('Nota: ')), nt = r.avisos.filter(a => a.startsWith('Nota: '));
+      if (av.length) det.append(el('div', { class: 'av' }, av.map(a => 'Aviso: ' + a).join('\n') + '\n')); if (nt.length) det.append(el('div', { class: 'nt' }, nt.join('\n') + '\n')); }
     if (S.calc) {
       det.append(el('div', {}, '\n— Último cálculo (' + S.calc.nombre + ') —\n' + S.calc.texto));
       if (S.calc.informe) det.append(el('a', { href: S.calc.informe, target: '_blank' }, 'Abrir el informe'));

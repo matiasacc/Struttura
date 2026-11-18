@@ -234,7 +234,7 @@ def generar_html(modelo: Modelo, resultados: dict, info: Info, sold: dict | None
         ["Datos", f"{modelo.n} nudos, {len(modelo.barras)} barras, {len(modelo.casos)} caso(s)"
                   + (f", {len(modelo.combinaciones)} combinación(es)" if modelo.combinaciones else "")]], clase="datos"))
     for a in modelo.avisos:
-        P.append(f'<div class="aviso"><b>Aviso:</b> {e_(a)}</div>')
+        P.append(f'<p class="nota">{e_(a)}</p>' if a.startswith("Nota: ") else f'<div class="aviso"><b>Aviso:</b> {e_(a)}</div>')
     P.append(_convenciones())
     P += _datos(modelo, U)
     P.append("<h2>2. Modelo 3D y resultados</h2>")
@@ -301,7 +301,7 @@ def generar_html_esquema(modelo: Modelo, aviso: str | None = None) -> str:
     if aviso:
         P.append(f'<div class="aviso"><b>Atención (estabilidad):</b> <pre>{e_(aviso)}</pre></div>')
     for a in modelo.avisos:
-        P.append(f'<div class="aviso"><b>Aviso:</b> {e_(a)}</div>')
+        P.append(f'<p class="nota">{e_(a)}</p>' if a.startswith("Nota: ") else f'<div class="aviso"><b>Aviso:</b> {e_(a)}</div>')
     P.append(_convenciones())
     P += _datos(modelo, U)
     P.append("<h2>Modelo 3D</h2>")

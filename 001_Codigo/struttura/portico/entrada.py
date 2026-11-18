@@ -282,7 +282,7 @@ def _leer_materiales(bloques, avisos=None, config=None):
                 dl = datos_modelo(lib, config["unidad_fuerza"], config["unidad_longitud"])
             except ErrorBiblioteca as e:
                 raise ErrorDeEntrada(f"Bloque MATERIALES, línea {n}: {e}")
-            avisos.append(f"Material '{id_}': datos de la biblioteca ({dl['fuente']}); valores típicos de la ficha, no garantizados.")
+            avisos.append(f"Nota: Material '{id_}': datos de la biblioteca ({dl['fuente']}); valores típicos de la ficha, no garantizados.")
         elif "e" not in r:
             raise ErrorDeEntrada("Bloque MATERIALES: faltan las columnas ['e'].  Se puede completar con lib;<número de la biblioteca>")
         E = _num(r.get("e"), "MATERIALES", n, "E", obligatorio=not lib)

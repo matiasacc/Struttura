@@ -244,5 +244,17 @@ c;2;-1;0;0
         self.assertAlmostEqual(s.Wt, 4670.0)
 
 
+class TestNotas(unittest.TestCase):
+    def test_material_de_biblioteca_es_nota_no_aviso(self):
+        from struttura.biblioteca import biblioteca as bib
+        if not bib.archivo().is_file():
+            self.skipTest("no hay biblioteca de materiales")
+        n = bib.listar()[0][0]
+        t = modelo3d("id;tipo;lib\nS;perfil;" + n_de("IPE 200")).read_text(encoding="utf-8").replace("id;e;nu\na;200000;0.3", f"id;lib\na;{n}")
+        m = cargar_3d(escribir(t))
+        mat = [a for a in m.avisos if "biblioteca" in a and "Material" in a]
+        self.assertTrue(mat and all(a.startswith("Nota: ") for a in mat))
+
+
 if __name__ == "__main__":
     unittest.main()

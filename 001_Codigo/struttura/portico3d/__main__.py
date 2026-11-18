@@ -72,7 +72,7 @@ def main(argv=None) -> int:
         print(f"\nERROR EN LOS DATOS DE ENTRADA\n  {e}\n", file=sys.stderr)
         return 1
     for av in modelo.avisos:
-        print(f"Aviso: {av}")
+        print(av if av.startswith("Nota: ") else f"Aviso: {av}")
     n_av = len(modelo.avisos)
     ruta = Path(a.archivo)
     salida = Path(a.salida) if a.salida else ruta.with_name(ruta.stem + "_salida")
@@ -93,7 +93,7 @@ def main(argv=None) -> int:
         print(f"\nERROR DE ESTRUCTURA\n  {e}\n", file=sys.stderr)
         return 2
     for av in modelo.avisos[n_av:]:
-        print(f"Aviso: {av}")
+        print(av if av.startswith("Nota: ") else f"Aviso: {av}")
     sold = None
     if modelo.soldaduras:
         from ..soldadura.grupo import ErrorSoldadura

@@ -328,7 +328,7 @@ def _de_biblioteca(lib, config, n, avisos, id_):
     for c in ("E", "G", "fy", "sut"):
         if d[c] is not None:
             d[c] *= k
-    avisos.append(f"Material '{id_}': datos de la biblioteca ({d['fuente']}); valores típicos de la ficha, no garantizados.")
+    avisos.append(f"Nota: Material '{id_}': datos de la biblioteca ({d['fuente']}); valores típicos de la ficha, no garantizados.")
     return d
 
 
