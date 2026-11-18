@@ -294,11 +294,35 @@ function control(b, f, col, o = {}) {
     onpaste: o.pegar ? (e => pegar(e, b, spec(b.t))) : null });
   if (lib != null) inp.title += '\nValor de la biblioteca: se usa mientras esta celda esté vacía; si escribís otro, manda el tuyo.';
   if (col.t === 'num' && v.trim() !== '' && !esNum(v)) inp.classList.add('mal');
-  return inp;
+  const uc = unidadCarga(b, f, col.n);
+  return uc ? el('span', { class: 'con-u' }, inp, el('small', { class: 'u', title: 'Unidad de este valor' }, uc)) : inp;
+}
+function unidadCarga(b, f, col) {               // unidad del valor de una carga en barra: depende del tipo de carga de la fila
+  if (b.t !== 'CARGAS EN BARRAS' || !['valor', 'valor2'].includes(col)) return '';
+  const t = low(get(b, f, 'tipo')); if (!t) return '';
+  const F = getP('unidad_fuerza') || 'N', L = getP('unidad_longitud') || 'mm';
+  if (t.startsWith('temp')) return '°C';
+  if (t === 'dl') return L;
+  if (t[0] === 'q') return `${F}/${L}`;
+  if (t[0] === 'm') return `${F}·${L}`;
+  if (t[0] === 'p') return F;
+  return '';
 }
 function editorCelda(b, f, col, r, ci_) { return el('td', {}, control(b, f, col, { r, c: ci_, pegar: true, tabla: true })); }
 const REF2 = { NODOS: 'nodos', BARRAS: 'barras', MATERIALES: 'materiales', SECCIONES: 'secciones', SOLDADURAS: 'soldaduras' };
 
+function ajustarAncho() {                      // el panel de tablas se ensancha lo justo para no necesitar la barra de desplazamiento horizontal
+  const izq = $('#izq'), w = $('#tabla-wrap'); if (!izq || !w) return;
+  const base = S.anchoBase || Math.round(window.innerWidth * 0.54);
+  izq.style.width = base + 'px';
+  const tope = Math.round(window.innerWidth * 0.85);
+  for (let i = 0; i < 3; i++) {
+    const falta = w.scrollWidth - w.clientWidth;
+    if (falta <= 1) break;
+    izq.style.width = Math.min(izq.offsetWidth + falta + 2, tope) + 'px';
+  }
+  if (window.V) V.redim();
+}
 function renderTabla() {
   const sp = spec(S.bloque); const wrap = $('#tabla-wrap'); const st = wrap.scrollTop;
   $('#titulo-bloque').replaceChildren(el('h2', {}, sp.et + (sp.ob ? '' : '  (opcional)'), el('small', { class: 'cl' }, sp.k === 'claves' ? '' : sp.t)), el('p', {}, sp.ay));
@@ -329,6 +353,7 @@ function renderTabla() {
   wrap.append(...[avisoBiblioteca(sp)].filter(Boolean), tabla, el('div', { class: 'barra-tabla' }, el('button', { onclick: () => agregarFila() }, '+ Agregar fila'), selectorBiblioteca(sp), sp.t === 'SECCIONES' ? el('label', { class: 'nota' }, el('input', { type: 'checkbox', checked: !!S.todasCols, onchange: e => { S.todasCols = e.target.checked; renderTabla(); } }), ' Mostrar todas las columnas') : null,
     el('span', { class: 'nota' }, 'Se pueden pegar celdas copiadas de Excel (Ctrl+V).  Pasá el mouse por el título de una columna para ver qué es.')));
   wrap.scrollTop = st;
+  ajustarAncho();
 }
 function avisoBiblioteca(sp) {                 // si no se encuentra el archivo, se dice dónde se lo busca y qué hacer
   const per = sp.t === 'SECCIONES';
@@ -806,6 +831,6 @@ window.addEventListener('beforeunload', e => { if (S.sucio) { e.preventDefault()
 (function divisor() {
   const d = $('#divisor'); let x0 = null, w0 = 0;
   d.addEventListener('pointerdown', e => { x0 = e.clientX; w0 = $('#izq').offsetWidth; d.setPointerCapture(e.pointerId); });
-  d.addEventListener('pointermove', e => { if (x0 == null) return; $('#izq').style.width = Math.max(320, Math.min(window.innerWidth - 340, w0 + e.clientX - x0)) + 'px'; if (window.V) V.redim(); });
+  d.addEventListener('pointermove', e => { if (x0 == null) return; S.anchoBase = Math.max(320, Math.min(window.innerWidth - 340, w0 + e.clientX - x0)); $('#izq').style.width = S.anchoBase + 'px'; if (window.V) V.redim(); });
   d.addEventListener('pointerup', () => { x0 = null; });
 })();

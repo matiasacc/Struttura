@@ -39,7 +39,7 @@ input.mal,select.mal{border-color:var(--error);background:var(--error-fondo)}
 #pasos .flecha{color:var(--apagado);padding:0 1px}
 
 #cuerpo{flex:1;display:flex;min-height:0}
-#izq{width:54%;min-width:320px;display:flex;flex-direction:column;background:var(--panel);min-height:0}
+#izq{flex:0 0 auto;width:54%;min-width:320px;display:flex;flex-direction:column;background:var(--panel);min-height:0}
 #divisor{width:5px;cursor:col-resize;background:var(--suave);border-left:1px solid var(--borde);border-right:1px solid var(--borde)}
 #der{flex:1;display:flex;flex-direction:column;min-width:320px;min-height:0}
 #titulo-bloque{padding:8px 10px;border-bottom:1px solid var(--suave)}
@@ -47,12 +47,12 @@ input.mal,select.mal{border-color:var(--error);background:var(--error-fondo)}
 #titulo-bloque p{margin:0;color:var(--apagado)}
 #tabla-wrap{flex:1;overflow:auto;padding:0 0 30px}
 
-table.t{border-collapse:collapse;width:max-content;min-width:100%}
-table.t th{position:sticky;top:0;background:var(--suave);text-align:left;font-weight:600;padding:4px 6px;border-bottom:1px solid var(--borde);white-space:nowrap;cursor:help;z-index:1}
+table.t{border-collapse:collapse;width:100%}
+table.t th{position:sticky;top:0;background:var(--suave);text-align:left;font-weight:600;font-size:11.5px;padding:4px 4px;hyphens:auto;border-bottom:1px solid var(--borde);white-space:normal;vertical-align:bottom;line-height:1.2;cursor:help;z-index:1}
 table.t th.ob::after{content:" •";color:var(--error)}
 table.t td{padding:1px 2px;border-bottom:1px solid var(--suave);vertical-align:middle}
 table.t td.idx{color:var(--apagado);font-family:var(--mono);font-size:11px;text-align:right;padding:0 6px;user-select:none;cursor:pointer}
-table.t td input[type=text],table.t td select{width:100%;min-width:64px;border-color:transparent;background:transparent}
+table.t td input[type=text],table.t td select{width:1px;min-width:100%;border-color:transparent;background:transparent}
 table.t td input[type=text]:hover,table.t td select:hover{border-color:var(--borde)}
 table.t td input[type=text]:focus,table.t td select:focus{background:var(--panel)}
 table.t td input.id{font-family:var(--mono)}
@@ -121,14 +121,14 @@ table.t td.acc button:hover{color:var(--error);background:none}
 
 /* ---- nombres claros, desplegables, apoyos Fijo/Libre */
 small.cl{display:block;font-family:var(--mono);font-size:10px;font-weight:400;color:var(--apagado);opacity:.85}
-table.t th .et{display:block;white-space:normal;min-width:70px;max-width:150px;line-height:1.2}
+table.t th .et{display:block;white-space:normal;min-width:44px;max-width:110px;word-break:break-word;line-height:1.2}
 #titulo-bloque h2 small.cl{display:inline;margin-left:10px}
-table.t td select.ref,table.t td select.lib{min-width:120px;max-width:260px}
+table.t td select.ref,table.t td select.lib{min-width:84px;max-width:260px}
 table.t td input.no-usa{background:var(--suave);color:var(--apagado)}
 table.t td input.no-usa::placeholder{color:var(--apagado)}
 input.de-lib::placeholder{color:var(--acento);font-style:italic;opacity:.9}
 input::placeholder{color:var(--apagado);opacity:.7}
-button.apoyo{min-width:52px;padding:2px 8px;border-radius:3px;font-weight:600}
+button.apoyo{min-width:36px;width:100%;padding:2px 4px;border-radius:3px;font-weight:600}
 button.apoyo.fijo{background:var(--acento);color:#fff;border-color:var(--acento)}
 button.apoyo.libre{background:transparent;color:var(--apagado)}
 select.agregar-lib{margin-left:8px;max-width:340px}
@@ -136,3 +136,5 @@ select.agregar-lib{margin-left:8px;max-width:340px}
 
 .aviso-bib{margin:8px 10px;padding:6px 10px;background:var(--aviso-fondo);color:var(--aviso);border:1px solid var(--aviso);border-radius:3px}
 .aviso-bib code{word-break:break-all}
+
+.con-u{display:flex;align-items:center;gap:3px}.con-u input{flex:1;width:1px;min-width:36px}small.u{color:var(--apagado);white-space:nowrap;font-size:11px;padding-right:2px}
