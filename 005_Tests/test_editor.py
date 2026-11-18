@@ -503,6 +503,28 @@ class TestPagina(unittest.TestCase):
         self.assertEqual(self.errs, [])
         pg.close()
 
+    def test_unidades_al_escribir_y_peso_propio(self):
+        pg = self.pagina()
+        self.abrir(pg, str(RAIZ / "003_Ejemplos" / "004_Portico_espacial" / "ejemplo1_voladizo_en_L.csv"))
+        pg.evaluate("t => irBloque(t)", "NODOS")
+        campo = pg.locator("#tabla-wrap tbody tr").first.locator("td").nth(2).locator("input")
+        campo.fill("5 in")
+        campo.press("Tab")
+        self.assertEqual(pg.evaluate("get(blk('NODOS'), filas('NODOS')[0], 'x')"), "127")
+        campo.fill("5 kN")                                     # fuerza en una columna de longitud: no se convierte
+        campo.press("Tab")
+        self.assertEqual(pg.evaluate("get(blk('NODOS'), filas('NODOS')[0], 'x')"), "5 kN")
+        self.assertEqual(pg.evaluate("[convertirUnidad('30 ksi','MPa').v, convertirUnidad('2 kN','N').v, convertirUnidad('10 kgf/cm2','MPa').v]"), ["206.842719", "2000", "0.980665"])
+        # peso propio: casilla + nombre
+        pg.evaluate("t => irBloque(t)", "PROYECTO")
+        pg.evaluate("setP('peso_propio', '')"); pg.evaluate("renderTabla()")
+        pg.locator(".form input[type=checkbox]").first.check()
+        self.assertEqual(pg.evaluate("getP('peso_propio')"), "PESO PROPIO")
+        pg.locator(".form input[type=checkbox]").first.uncheck()
+        self.assertEqual(pg.evaluate("getP('peso_propio')"), "")
+        self.assertEqual(self.errs, [])
+        pg.close()
+
     def test_renombrar_un_nodo_actualiza_las_barras(self):
         pg = self.pagina()
         self.abrir(pg, str(RAIZ / "003_Ejemplos" / "002_Portico" / "ejemplo14_portico_biempotrado.csv"))

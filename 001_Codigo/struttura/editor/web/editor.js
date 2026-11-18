@@ -161,6 +161,35 @@ function unidad(cod) {
   const F = getP('unidad_fuerza') || 'N', L = getP('unidad_longitud') || 'mm';
   return ({ F, L, S: `${F}/${L}²`, FL: `${F}·${L}`, K: `${F}/${L}`, KG: `${F}·${L}/rad`, L2: `${L}²`, L3: `${L}³`, L4: `${L}⁴`, rad: 'rad', deg: '°', rho: 'kg/m³', alfa: '1/°C' })[cod] || '';
 }
+/* ---- conversión de unidades al escribir «5 in», «2 kN», «30 ksi»: al aceptar la celda se pasa a la unidad del proyecto */
+const U_BASE = { mm: [0.001, 'L'], cm: [0.01, 'L'], m: [1, 'L'], in: [0.0254, 'L'], ft: [0.3048, 'L'],
+  N: [1, 'F'], kN: [1e3, 'F'], MN: [1e6, 'F'], kgf: [9.80665, 'F'], tf: [9806.65, 'F'], lbf: [4.4482216152605, 'F'], kip: [4448.2216152605, 'F'],
+  rad: [1, 'A'], deg: [Math.PI / 180, 'A'], '°': [Math.PI / 180, 'A'] };
+const U_PRES = { Pa: 1, kPa: 1e3, MPa: 1e6, GPa: 1e9, psi: 6894.757293168, ksi: 6894757.293168 };   // N/m²
+function parseUnidad(t) {                      // → { f: factor al SI (N, m, rad), d: {F, L, A} } o null
+  const d = { F: 0, L: 0, A: 0 }; let f = 1;
+  const partes = t.trim().replace(/\s+/g, '').split('/');
+  for (let i = 0; i < partes.length; i++) {
+    const signo = i === 0 ? 1 : -1;
+    for (const tok of partes[i].split(/[·*]/)) {
+      const m = tok.match(/^([A-Za-z°]+)(?:\^?(-?\d)|(²)|(³))?$/); if (!m) return null;
+      const e = (m[3] ? 2 : m[4] ? 3 : m[2] ? +m[2] : 1) * signo;
+      if (U_PRES[m[1]] != null) { f *= Math.pow(U_PRES[m[1]], e); d.F += e; d.L -= 2 * e; continue; }
+      const u = U_BASE[m[1]]; if (!u) return null;
+      f *= Math.pow(u[0], e); d[u[1]] += e;
+    }
+  }
+  return { f, d };
+}
+function convertirUnidad(texto, destino) {     // → { v } convertido, { err } o null si no trae unidad
+  const t = String(texto).trim(); if (!t || !destino) return null;
+  const m = t.match(/^([-+]?(?:\d+[.,]?\d*|[.,]\d+)(?:[eE][-+]?\d+)?)\s*([A-Za-z°].*)$/); if (!m) return null;
+  const o = parseUnidad(m[2]), dst = parseUnidad(destino);
+  if (!o) return { err: `unidad «${m[2]}» no reconocida` };
+  if (!dst) return null;
+  if (['F', 'L', 'A'].some(k => o.d[k] !== dst.d[k])) return { err: `«${m[2]}» no corresponde a esta columna (se espera ${destino})` };
+  return { v: fmt(parseFloat(m[1].replace(',', '.')) * o.f / dst.f) };
+}
 const conUnidad = c => c.et + (c.u && unidad(c.u) ? ` [${unidad(c.u)}]` : '');
 const nombreOpc = (c, o) => (c && c.ope && c.ope[o]) || o;
 const SI = ['1', 'si', 'sí', 's', 'x', 'true', 'yes'];
@@ -290,7 +319,14 @@ function control(b, f, col, o = {}) {
       if (col.t === 'num') e.target.classList.toggle('mal', e.target.value.trim() !== '' && !esNum(e.target.value));
       if (window.V) V.dibujar(); renderArchivo(); programarRevision(); renderBotones();
     },
-    onchange: e => confirmar(e.target.dataset.prev),
+    onchange: e => {
+      if (col.t === 'num') {
+        const c = convertirUnidad(e.target.value, unidadCarga(b, f, col.n) || (col.u ? unidad(col.u) : ''));
+        if (c && c.v != null) { aviso(`${e.target.value.trim()} → ${c.v} ${unidadCarga(b, f, col.n) || unidad(col.u)}`); e.target.value = c.v; set(b, f, col.n, c.v); e.target.classList.remove('mal'); }
+        else if (c && c.err) { aviso('No se convirtió: ' + c.err); e.target.classList.add('mal'); }
+      }
+      confirmar(e.target.dataset.prev);
+    },
     onpaste: o.pegar ? (e => pegar(e, b, spec(b.t))) : null });
   if (lib != null) inp.title += '\nValor de la biblioteca: se usa mientras esta celda esté vacía; si escribís otro, manda el tuyo.';
   if (col.t === 'num' && v.trim() !== '' && !esNum(v)) inp.classList.add('mal');
@@ -398,6 +434,22 @@ function renderClaves(wrap, sp) {
   const conocidas = new Set(sp.cols.map(c => c.n));
   const campo = (c, v, extra) => {
     let inp;
+    if (c.n === 'peso_propio') {                 // casilla + nombre del caso; el CSV sigue guardando solo el nombre (vacío = sin peso propio)
+      const on = !!v;
+      const chk = el('input', { type: 'checkbox', checked: on, title: 'Incluir el peso propio de todas las barras (usa rho del material)',
+        onchange: e => { mut(() => setP('peso_propio', e.target.checked ? (S.ppUlt || 'PESO PROPIO') : '')); } });
+      const nom = on ? el('input', { type: 'text', value: v, placeholder: 'Nombre del caso', title: 'Nombre del caso de carga del peso propio', autocomplete: 'off', spellcheck: 'false',
+        oninput: e => { if (S.pend == null) S.pend = snap(); S.ppUlt = e.target.value; setP(c.n, e.target.value); S.sucio = true; renderArchivo(); programarRevision(); renderBotones(); },
+        onchange: () => { cerrarPend(); cambio(); } }) : null;
+      if (on) S.ppUlt = v;
+      inp = el('span', { class: 'con-u', style: 'gap:8px' }, chk, nom);
+      form.append(el('label', { title: c.ay }, 'Incluir peso propio', el('small', {}, 'Suma el peso de todas las barras como un caso de carga (usa rho del material)'), el('small', { class: 'cl' }, c.n)), inp);
+      return;
+    }
+    if (c.n === 'gravedad' && !getP('peso_propio')) {
+      form.append(el('label', { title: c.ay }, c.et || c.n, el('small', {}, 'Se usa solo con el peso propio'), el('small', { class: 'cl' }, c.n)), el('span', { class: 'fijo' }, '— (sin peso propio)'));
+      return;
+    }
     if (c.t === 'opc' && !c.fijo) {
       inp = el('select', { onchange: e => { mut(() => setP(c.n, e.target.value)); } }, el('option', { value: '' }, c.d ? `(por defecto: ${nombreOpc(c, c.d)})` : ''), opcionesCon(c, v).map(o => el('option', { value: o }, nombreOpc(c, o))));
       inp.value = opcionesCon(c, v).find(o => low(o) === low(v)) || '';

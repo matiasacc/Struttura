@@ -1,6 +1,8 @@
 """Informe HTML autocontenido con formato de memoria de cálculo (sobrio, imprimible)."""
 from __future__ import annotations
 
+from struttura import plegable
+
 import datetime
 import html
 
@@ -73,7 +75,7 @@ def documento(titulo: str, cuerpo: str, boton: bool = True, visor: bool = False)
          '<div class="nota">Si el navegador agrega fecha o título en los bordes, desactivar '
          '"Encabezados y pies de página" en el diálogo de impresión.</div></div>') if boton else ""
     return (f"<!DOCTYPE html><html lang='es'><head><meta charset='utf-8'><title>{e_(titulo)}</title>"
-            f"<style>{CSS}</style>" + (f"<script>{visor3d.LIB_JS}</script>" if visor else "") + "</head><body>"
+            f"<style>{CSS}</style>" + (f"<script>{visor3d.LIB_JS}</script>" if visor else "") + f"<style>{plegable.CSS}</style><script>{plegable.JS}</script></head><body>"
             '<table class="hoja"><thead><tr><td><div class="esp"></div></td></tr></thead><tbody><tr><td>'
             f'<div class="contenido">{cuerpo}{b}</div>'
             '</td></tr></tbody><tfoot><tr><td><div class="esp"></div></td></tr></tfoot></table></body></html>')

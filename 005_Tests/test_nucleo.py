@@ -2,6 +2,7 @@
 import math
 import sys
 import tempfile
+import os
 import unittest
 from pathlib import Path
 
@@ -650,3 +651,20 @@ class TestMenuSinArgumentos(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
+
+
+class TestEstadoTotal(unittest.TestCase):
+    """Sin COMBINACIONES propias y con más de un caso, el modelo agrega TOTAL = suma de todos los casos (factor 1)."""
+
+    def test_total_automatico_en_el_3d(self):
+        import tempfile
+        from struttura.portico3d.entrada import cargar_modelo
+        raiz = os.path.join(os.path.dirname(__file__), "..", "003_Ejemplos", "004_Portico_espacial", "ejemplo5_articulaciones_y_peso_propio.csv")
+        t = open(raiz, encoding="utf-8").read().replace("SERVICIO;PP;1\nSERVICIO;P;1", "").replace("COMBINACIONES\ncombinacion;caso;factor", "")
+        with tempfile.TemporaryDirectory() as d:
+            f = os.path.join(d, "m.csv")
+            with open(f, "w", encoding="utf-8") as h:
+                h.write(t)
+            m = cargar_modelo(f)
+        self.assertEqual(sorted(c for c, _ in m.combinaciones["TOTAL"]), ["P", "PP"])
+        self.assertTrue(all(fa == 1.0 for _, fa in m.combinaciones["TOTAL"]))

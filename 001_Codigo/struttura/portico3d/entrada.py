@@ -611,6 +611,8 @@ def _leer_combinaciones(bloques, casos):
         if r["caso"] not in casos:
             raise ErrorDeEntrada(f"Bloque COMBINACIONES, línea {n}: el caso '{r['caso']}' no existe")
         combos.setdefault(nombre, []).append((r["caso"], _num(r["factor"], "COMBINACIONES", n, "factor")))
+    if not combos and len(casos) > 1 and "TOTAL" not in casos:   # estado total: suma de todos los casos (factor 1), solo si no hay combinaciones propias
+        combos["TOTAL"] = [(c, 1.0) for c in casos]
     return combos
 
 

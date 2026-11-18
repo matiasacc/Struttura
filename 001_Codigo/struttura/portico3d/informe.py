@@ -1,6 +1,8 @@
 """Informe HTML (memoria de cálculo) del pórtico espacial, con visor 3D."""
 from __future__ import annotations
 
+from struttura import plegable
+
 import datetime
 import html
 
@@ -23,7 +25,7 @@ CSS = CSS_BASE + visor.CSS
 
 def documento(titulo: str, cuerpo: str) -> str:
     return (f"<!DOCTYPE html><html lang='es'><head><meta charset='utf-8'><title>{e_(titulo)}</title>"
-            f"<style>{CSS}</style><script>{visor.JS}</script></head><body>"
+            f"<style>{CSS}</style><script>{visor.JS}</script><style>{plegable.CSS}</style><script>{plegable.JS}</script></head><body>"
             '<table class="hoja"><thead><tr><td><div class="esp"></div></td></tr></thead><tbody><tr><td>'
             f'<div class="contenido">{cuerpo}'
             '<div class="boton-imprimir no-print"><button onclick="window.print()">Imprimir</button></div></div>'
