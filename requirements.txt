@@ -1,5 +1,5 @@
 # ======================================================================================
-# STRUTTURA v1.1.13 — dependencias y comandos rápidos
+# STRUTTURA v1.1.14 — dependencias y comandos rápidos
 # Instalar:   pip install -r requirements.txt
 # (las líneas que empiezan con # son comentarios: pip las ignora)
 # ======================================================================================

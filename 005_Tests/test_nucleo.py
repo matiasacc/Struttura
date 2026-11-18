@@ -634,5 +634,19 @@ class TestParcialesEmparrillado(unittest.TestCase):
         self.assertAlmostEqual(r.u[1, 2], -0.0054, delta=1e-4)
 
 
+class TestMenuSinArgumentos(unittest.TestCase):
+    def test_sin_argumentos_muestra_las_opciones(self):
+        import contextlib
+        import io
+        from struttura.despachador import main
+        for args in ([], ["-h"]):
+            buf = io.StringIO()
+            with contextlib.redirect_stdout(buf):
+                rc = main(args)
+            self.assertEqual(rc, 0)
+            for t in ("--editor", "--soldadura", "--biblioteca", "--sin-graficos"):
+                self.assertIn(t, buf.getvalue())
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

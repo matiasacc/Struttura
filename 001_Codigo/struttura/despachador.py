@@ -55,8 +55,36 @@ def detectar_tipo(ruta):
     return tipo
 
 
+MENU = """Struttura {version}  -  qué podés hacer
+
+  Editor visual (lo más simple: armás el modelo, lo revisás y lo calculás ahí mismo)
+    py struttura.py --editor                     editor vacío
+    py struttura.py --editor modelo.csv          editor con un modelo ya cargado
+
+  Calcular un modelo ya escrito (el tipo va dentro del CSV: tipo;portico3d | portico | emparrillado | reticulado)
+    py struttura.py modelo.csv                   calcula; deja el informe en modelo_salida/informe.html
+    py struttura.py modelo.csv --sin-graficos    más rápido, informe sin gráficos
+    py struttura.py modelo.csv -o carpeta        elige la carpeta de salida
+    py struttura.py modelo.csv --solo-esquema    solo dibuja la estructura, sin calcular
+
+  Soldadura (modo rápido)
+    py struttura.py --soldadura "circulo d=50.8 Vz=3000 My=200000 electrodo=E70 w=3"
+
+  Bibliotecas (006_Biblioteca)
+    py struttura.py --biblioteca listar | ver N            materiales
+    py struttura.py --biblioteca perfiles [FAMILIA] | perfil N_O_DESIGNACION     perfiles CIRSOC
+    py struttura.py --biblioteca electrodos | electrodo N_O_ID
+
+  Otros:  --version   |   -h  (esta ayuda)   |   ejemplos en la carpeta 003_Ejemplos
+"""
+
+
 def main(argv=None):
     argv = list(sys.argv[1:] if argv is None else argv)
+    if not argv or argv in (["-h"], ["--help"], ["--ayuda"]):
+        from . import __version__
+        print(MENU.format(version=__version__))
+        return 0
     if "--editor" in argv:
         from .editor.servidor import main as m
         return m(argv)
