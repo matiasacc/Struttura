@@ -668,3 +668,16 @@ class TestEstadoTotal(unittest.TestCase):
             m = cargar_modelo(f)
         self.assertEqual(sorted(c for c, _ in m.combinaciones["TOTAL"]), ["P", "PP"])
         self.assertTrue(all(fa == 1.0 for _, fa in m.combinaciones["TOTAL"]))
+
+
+class TestValorAlPasarElMouse(unittest.TestCase):
+    """Los visores de los tres códigos de dibujo traen la casilla «valor al pasar el mouse» (apagada por defecto)."""
+
+    def test_casilla_en_los_visores(self):
+        from struttura.portico3d import visor as v3
+        from struttura.portico import visor2d
+        from struttura.emparrillado import visor3d
+        for modulo in (v3, visor2d, visor3d):
+            fuente = open(modulo.__file__, encoding="utf-8").read()
+            self.assertIn("valor al pasar el mouse", fuente, modulo.__name__)
+            self.assertIn("hov: false", fuente, modulo.__name__)

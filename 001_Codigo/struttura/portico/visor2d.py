@@ -38,7 +38,7 @@ function emp2d(id, D) {
   var W = 760, H = 520, NS = "http://www.w3.org/2000/svg";
   var C = {px: "%(PX)s", py: "%(PY)s", m: "%(M)s", t: "%(T)s", r: "#0b7a6b"};
   var st = {esc: 0, zoom: 1, ox: 0, oy: 0, dia: "", modo: "carg", barra: -1, base: "fy", unica: D.escala === "global",
-            sw: {carg: false, val: true, ids: true, apo: true}};
+            sw: {carg: false, val: true, hov: false, ids: true, apo: true}};
   function fm(v) { if (v === 0) return "0"; var a = Math.abs(v);
     return (a >= 1e-3 && a < 1e7) ? String(+v.toPrecision(4)) : v.toExponential(3); }
 
@@ -143,6 +143,9 @@ function emp2d(id, D) {
         if (vk <= 1e-6 * vmax || (una && k !== st.barra)) return;
         var g = D.g[k], nx = -g[1] * lado, ny = g[0] * lado, esc = (una ? 0.3 * D.L[k] : 0.13 * ext) / (st.unica && !una ? vmax : vk);
         function P(x, v) { var q = pos(k, x); return T(q[0] + v * esc * nx, q[1] + v * esc * ny); }
+        if (st.sw.hov) { var un = st.dia === "M" ? D.unid[0] + "\u00b7" + D.unid[1] : D.unid[0];       // recuadro al pasar el mouse: valor del esfuerzo en ese punto
+          sr.x.forEach(function (x, i) { var h = "<b>Barra " + D.bid[k] + "</b><br>x = " + fm(x) + " " + D.unid[1] + "<br>" + st.dia + " = <b>" + fm(sr.v[i]) + "</b> " + un;
+            [0, sr.v[i]].forEach(function (vv) { var q = P(x, vv); hitsU.push({x: q[0], y: q[1], html: h}); }); }); }
         partes(sr.x, sr.v).forEach(function (pt) { var sm = 0; pt[1].forEach(function (v) { sm += v; }); var pos_ = sm >= 0;
           var pts = [P(pt[0][0], 0)].concat(pt[0].map(function (x, i) { return P(x, pt[1][i]); })).concat([P(pt[0][pt[0].length - 1], 0)]);
           el("polygon", {points: pts.map(function (p) { return p.join(","); }).join(" "), fill: pos_ ? "#a9c8e8" : "#f0b8ac", "fill-opacity": 0.85, stroke: pos_ ? "#1f4e79" : "#8a2c1a", "stroke-width": 1}); });
@@ -153,6 +156,10 @@ function emp2d(id, D) {
             txt(p[0] + sg * nx * 12, p[1] - sg * ny * 12 + 3, fm(sr.v[i]), "#000", 10.5); } }); }
       }); }
     // deformada
+    if (verDef && st.sw.hov) es.def.curvas.forEach(function (c, k) {   // recuadro al pasar el mouse: desplazamiento en ese punto
+      c.forEach(function (p, i) { var q = T(p[0] + es.def.esc * p[2], p[1] + es.def.esc * p[3]);
+        hitsU.push({x: q[0], y: q[1], html: "<b>Barra " + D.bid[k] + "</b><br>x = " + fm(D.L[k] * i / (c.length - 1)) + " " + D.unid[1] + "<br>|u| = <b>" + fm(Math.hypot(p[2], p[3])) + "</b> " + D.unid[1] +
+          "<br>ux = " + fm(p[2]) + ", uy = " + fm(p[3]) }); }); });
     if (verDef) es.def.curvas.forEach(function (c) { var pts = c.map(function (p) { var q = T(p[0] + es.def.esc * p[2], p[1] + es.def.esc * p[3]); return q.join(","); });
       el("polyline", {points: pts.join(" "), fill: "none", stroke: "#000", "stroke-width": 2.6, "stroke-linejoin": "round"}); });
     // nodos
@@ -208,7 +215,7 @@ function emp2d(id, D) {
     h += "<label>Barra: <select data-r='barra' disabled><option value='-1'>todas</option>" + D.bid.map(function (b, i) { return "<option value='" + i + "'>" + b + "</option>"; }).join("") + "</select></label> ";
     if (hayDia) h += "<label><input type='checkbox' data-s='unica'> escala única</label>";
     if (hayUtil) h += "<label>Color seg\u00fan: <select data-r='base'><option value='fy'>" + (D.refn[0] || "fy") + "</option><option value='sadm'>\u03c3adm</option></select></label> ";
-    [["val", "valores"], ["ids", "nodos y barras"], ["apo", "apoyos"], ["carg", "superponer cargas"]].forEach(function (s) {
+    [["val", "valores"], ["hov", "valor al pasar el mouse"], ["ids", "nodos y barras"], ["apo", "apoyos"], ["carg", "superponer cargas"]].forEach(function (s) {
       h += "<label><input type='checkbox' data-s='" + s[0] + "'" + (st.sw[s[0]] ? " checked" : "") + "> " + s[1] + "</label>"; });
     ctrl.innerHTML = h; root.appendChild(ctrl);
     svg = document.createElementNS(NS, "svg"); svg.setAttribute("class", "lienzo"); svg.setAttribute("viewBox", "0 0 " + W + " " + H); root.appendChild(svg);

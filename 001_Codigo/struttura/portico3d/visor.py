@@ -31,7 +31,7 @@ CSS = """
 JS = NAV_JS + r"""
 function st3d(id, D) {
   var root = document.getElementById(id), NS = "http://www.w3.org/2000/svg", W = 780, H = 560;
-  var S = {az: -35, el: 25, base: 1, zoom: 1, ox: 0, oy: 0, caso: 0, modo: "carg", comp: 0, barra: -1, ids: true, cargas: false, val: true, unica: D.escala === "global"};
+  var S = {az: -35, el: 25, base: 1, zoom: 1, ox: 0, oy: 0, caso: 0, modo: "carg", comp: 0, barra: -1, ids: true, cargas: false, val: true, hov: false, unica: D.escala === "global"};
   var VISTAS = {iso: [-35, 25], planta: [0, 90], frente: [0, 0], lateral: [90, 0]};
   var MODOS = ["Estructura", "Cargas", "Deformada", "Utilización", "N", "Vy", "Vz", "T", "My", "Mz"];
   var c0 = D.centro, dim = D.dim, ca, sa, ce, se;
@@ -69,7 +69,7 @@ function st3d(id, D) {
   ctrl.appendChild(document.createTextNode(" ")); lab("Barra:");
   selBarra = sel(ctrl, ["todas"].concat(D.barras.map(function (b) { return b.id; })), 0, function (v) { S.barra = v - 1; dib(); });
   selBarra.disabled = true; ctrl.appendChild(document.createTextNode(" "));
-  chk("nodos y barras", "ids"); chk("valores", "val"); chk("superponer cargas", "cargas"); chk("escala única", "unica");
+  chk("nodos y barras", "ids"); chk("valores", "val"); chk("valor al pasar el mouse", "hov"); chk("superponer cargas", "cargas"); chk("escala única", "unica");
 
   var g, LT, polis, hits = [];
   function el(t, at, txt) { var e = document.createElementNS(NS, t); for (var k in at) e.setAttribute(k, at[k]); if (txt !== undefined) e.textContent = txt; svg.appendChild(e); return e; }
@@ -138,7 +138,10 @@ function st3d(id, D) {
     }
     // deformada
     if (m === "def") {
-      cs.def.forEach(function (c) { for (var s = 0; s < c.length - 1; s++) linea(c[s], c[s + 1], "#d00", 2.2); });
+      cs.def.forEach(function (c, k) { for (var s = 0; s < c.length - 1; s++) linea(c[s], c[s + 1], "#d00", 2.2);
+        if (S.hov && cs.defu && !(una && k !== S.barra)) c.forEach(function (pt, s) { var q = P(pt), u = cs.defu[k][s];     // recuadro al pasar el mouse: desplazamiento en ese punto
+          hits.push({x: q[0], y: q[1], html: "<b>Barra " + D.barras[k].id + "</b><br>x = " + fm(largo(k) * s / (c.length - 1)) + " " + D.unid[1] + "<br>|u| = <b>" + fm(Math.hypot(u[0], u[1], u[2])) + "</b> " + D.unid[1] +
+            "<br>ux = " + fm(u[0]) + ", uy = " + fm(u[1]) + ", uz = " + fm(u[2]) }); }); });
       LT.vaciar();
       cs.desp.forEach(function (d) { if (S.val) texto(add(D.nodos[d[0]], d[1], D.escdef), "|u|=" + fm(d[2]), "#d00", 10); });
     }
@@ -154,6 +157,9 @@ function st3d(id, D) {
         var paso = una || D.barras.length <= 30 ? 1 : 2;
         for (var s = 0; s < pts.length; s += paso) linea(pts[s][0], pts[s][1], "#9bb7e6", 0.8);
         for (var s2 = 0; s2 < pts.length - 1; s2++) linea(pts[s2][1], pts[s2 + 1][1], "#1a5fb4", una ? 2.6 : 2);
+        if (S.hov) { var un = S.comp < 3 ? D.unid[0] : D.unid[0] + "·" + D.unid[1];               // recuadro al pasar el mouse: valor del esfuerzo en ese punto
+          pts.forEach(function (pp, s5) { var h = "<b>Barra " + b.id + "</b><br>x = " + fm(d.xs[s5]) + " " + D.unid[1] + "<br>" + MODOS[modoIdx] + " = <b>" + fm(v[s5]) + "</b> " + un;
+            [pp[0], pp[1]].forEach(function (z) { var q = P(z); hits.push({x: q[0], y: q[1], html: h}); }); }); }
         if (S.val && vm !== 0 && (una || Math.abs(vm) >= 0.35 * vg)) texto(pts[im][1], fm(vm), "#1a5fb4", 10.5);
         if (una && S.val) { [0, pts.length - 1].forEach(function (q) { if (Math.abs(v[q]) > 1e-9 * Math.abs(vm) && q !== im) texto(pts[q][1], fm(v[q]), "#555", 10); }); } });
       LT.vaciar();
@@ -217,15 +223,17 @@ def _datos_visor(modelo, resultados, esc_def=None, pie=""):
                 q.append({"b": kb, "q": v.tolist(), "qmax": float(qmax)})
             elif c[0] == "P":
                 Pp.append({"b": kb, "t": c[1] / b.L, "f": (b.R.T @ (c[2] * f)).tolist()})
-        curvas = []
+        curvas, defu = [], []
         for k, b in enumerate(modelo.barras):
             ub = r.ub[k]
-            pts = []
+            pts, us = [], []
             for x in np.linspace(0, b.L, 21):
                 Nu, Nv, Nw, *_ = _formas(x, b.L)
                 dl = np.array([Nu @ ub, Nv @ ub, Nw @ ub])
                 pts.append((P[b.i] + b.R[0] * x + esc * (b.R.T @ dl)).tolist())
+                us.append([float(a) for a in (b.R.T @ dl)])        # desplazamiento en ejes globales (sin escala)
             curvas.append(pts)
+            defu.append(us)
         desp = [[k, (r.u[k, :3] * esc).tolist(), float(np.linalg.norm(r.u[k, :3]))]
                 for k in range(modelo.n) if np.linalg.norm(r.u[k, :3]) > 0]
         an = analizar(modelo, r)
@@ -235,7 +243,7 @@ def _datos_visor(modelo, resultados, esc_def=None, pie=""):
             for lista, clave in ((util, "util"), (utilA, "util_adm")):
                 lista.append(None if d[clave] is None else np.interp(np.linspace(0, modelo.barras[k].L, 21), xs, d[clave]).round(4).tolist())
         apo = [[float(v) for v in r.u[a["k"], :6]] for a in apoyos]
-        casos.append({"nombre": nombre, "apo": apo, "util": util, "utilA": utilA, "F": F, "q": q, "P": Pp, "def": curvas,
+        casos.append({"nombre": nombre, "apo": apo, "util": util, "utilA": utilA, "F": F, "q": q, "P": Pp, "def": curvas, "defu": defu,
                       "desp": desp,
                       "dia": [{"xs": dia[nombre][k][0].tolist(), "v": dia[nombre][k][1].T.tolist()} for k in range(nb)]})
     return {"nodos": P.tolist(), "ids": [nd.id for nd in modelo.nodos], "centro": centro, "dim": dim, "barras": barras,

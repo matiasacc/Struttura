@@ -46,7 +46,7 @@ function emp3d(id, D) {
   var root = document.getElementById(id);
   var W = 760, H = 540, NS = "http://www.w3.org/2000/svg";
   var C = {pz: "%(PZ)s", mx: "%(MX)s", my: "%(MY)s"};
-  var st = {az: -32, el: 28, zoom: 1, ox: 0, oy: 0, esc: 0, modo: "carg", base: "fy", dia: "", barra: -1, unica: D.escala === "global", sw: {pz: true, mx: true, my: true, val: true, ids: true, carg: false, apo: true}};
+  var st = {az: -32, el: 28, zoom: 1, ox: 0, oy: 0, esc: 0, modo: "carg", base: "fy", dia: "", barra: -1, unica: D.escala === "global", sw: {pz: true, mx: true, my: true, val: true, hov: false, ids: true, carg: false, apo: true}};
   var VISTAS = {iso: [-32, 28], planta: [0, 90], frente: [0, 0], lateral: [90, 0]};
   var nn = D.nodos.length;
 
@@ -161,6 +161,9 @@ function emp3d(id, D) {
         if (vk <= 1e-6 * vmax || (una && k !== st.barra)) return;
         var g = D.g[k], A0 = D.nodos[D.barras[k][0]], nx = -g[1], ny = g[0], esc = (una ? 0.3 * D.L[k] : 0.13 * D.dim) / (st.unica && !una ? vmax : vk);
         function Q(x, v) { return P([A0[0] + g[0] * x + nx * v * esc, A0[1] + g[1] * x + ny * v * esc, 0]); }
+        if (st.sw.hov) { var un = st.dia === "V" ? D.unid[0] : D.unid[0] + "\u00b7" + D.unid[1];       // recuadro al pasar el mouse: valor del esfuerzo en ese punto
+          sr.x.forEach(function (x, i) { var h = "<b>Barra " + D.bid[k] + "</b><br>x = " + fm(x) + " " + D.unid[1] + "<br>" + st.dia + " = <b>" + fm(sr.v[i]) + "</b> " + un;
+            [0, sr.v[i]].forEach(function (vv) { var q = Q(x, vv); hitsU.push({x: q[0], y: q[1], html: h}); }); }); }
         var cortes = [[sr.x[0]], [sr.v[0]]], partes = [];
         for (var i = 1; i < sr.x.length; i++) {
           var u = cortes[1][cortes[1].length - 1];
@@ -177,6 +180,9 @@ function emp3d(id, D) {
             if (Math.abs(sr.v[i3]) > 1e-9 * vmax) { var q = Q(sr.x[i3], sr.v[i3]); texto(q[0], q[1] - 4, fm(sr.v[i3]), "#000", 10.5); } }); }
       }); }
     // deformada
+    if (verDef && st.sw.hov) es.def.curvas.forEach(function (c, k) {   // recuadro al pasar el mouse: desplazamiento vertical en ese punto
+      c.forEach(function (p, i) { var q = P([p[0], p[1], p[2] * es.def.esc]);
+        hitsU.push({x: q[0], y: q[1], html: "<b>Barra " + D.bid[k] + "</b><br>x = " + fm(D.L[k] * i / (c.length - 1)) + " " + D.unid[1] + "<br>uz = <b>" + fm(p[2]) + "</b> " + D.unid[1] }); }); });
     if (verDef) es.def.curvas.forEach(function (c) {
       for (var i = 0; i + 1 < c.length; i++) linea([c[i][0], c[i][1], c[i][2] * es.def.esc], [c[i + 1][0], c[i + 1][1], c[i + 1][2] * es.def.esc], "#000", 2.6); });
     // nodos y apoyos (verde = apoyo, naranja = solo resorte); el recuadro muestra las condiciones de borde
@@ -251,7 +257,7 @@ function emp3d(id, D) {
     h += "<label>Barra: <select data-r='barra' disabled><option value='-1'>todas</option>" + D.bid.map(function (b, i) { return "<option value='" + i + "'>" + b + "</option>"; }).join("") + "</select></label> ";
     if (hayDia) h += "<label><input type='checkbox' data-s='unica'" + (st.unica ? " checked" : "") + "> escala \u00fanica</label>";
     if (hayUtil) h += "<label>Color seg\u00fan: <select data-r='base'><option value='fy'>" + (D.refn[0] || "fy") + "</option><option value='sadm'>\u03c3adm</option></select></label> ";
-    [["pz", "Pz / P / q"], ["mx", "Mx"], ["my", "My"], ["val", "valores"], ["ids", "nodos y barras"], ["apo", "apoyos"], ["carg", "superponer cargas"]].forEach(function (s) {
+    [["pz", "Pz / P / q"], ["mx", "Mx"], ["my", "My"], ["val", "valores"], ["hov", "valor al pasar el mouse"], ["ids", "nodos y barras"], ["apo", "apoyos"], ["carg", "superponer cargas"]].forEach(function (s) {
       h += "<label><input type='checkbox' data-s='" + s[0] + "'" + (st.sw[s[0]] ? " checked" : "") + "> " + s[1] + "</label>"; });
     ctrl.innerHTML = h; root.appendChild(ctrl);
     svg = document.createElementNS(NS, "svg"); svg.setAttribute("class", "lienzo"); svg.setAttribute("viewBox", "0 0 " + W + " " + H); root.appendChild(svg);
