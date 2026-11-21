@@ -45,7 +45,7 @@ const V = (() => {
     const bb = blk('BARRAS');
     if (bb) for (const f of bb.filas) {
       const id = get(bb, f, 'id'), i = m.nodos.get(get(bb, f, 'nodo_i')), j = m.nodos.get(get(bb, f, 'nodo_j'));
-      if (id && i && j) m.barras.push({ id, i, j, ai: low(get(bb, f, 'art_i')) !== '' && !['0', 'no', 'n', 'false', '-'].includes(low(get(bb, f, 'art_i'))),
+      if (id && i && j) m.barras.push({ id, i, j, sup: esSi(get(bb, f, 'suprimida')), ai: low(get(bb, f, 'art_i')) !== '' && !['0', 'no', 'n', 'false', '-'].includes(low(get(bb, f, 'art_i'))),
                                        aj: low(get(bb, f, 'art_j')) !== '' && !['0', 'no', 'n', 'false', '-'].includes(low(get(bb, f, 'art_j'))) });
     }
     for (const f of filas('APOYOS')) { const n = get(blk('APOYOS'), f, 'nodo'); if (n) m.apoyos.set(n, apoyoDe(n)); }
@@ -245,7 +245,7 @@ const V = (() => {
     for (const b of m.barras) {
       const sel = S.sel && S.sel.k === 'barra' && S.sel.id === b.id; const hv = hover && hover.k === 'barra' && hover.id === b.id;
       const a = proy(b.i.p), z = proy(b.j.p);
-      ctx.strokeStyle = sel ? ac : hv ? css('--apagado') : col; ctx.lineWidth = sel ? 4 : 2.6; ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(z[0], z[1]); ctx.stroke();
+      ctx.strokeStyle = sel ? ac : hv ? css('--apagado') : b.sup ? css('--apagado') : col; ctx.lineWidth = sel ? 4 : b.sup ? 1.6 : 2.6; ctx.setLineDash(b.sup ? [6, 5] : []); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(z[0], z[1]); ctx.stroke(); ctx.setLineDash([]);
       const L = Math.hypot(z[0] - a[0], z[1] - a[1]);
       if (L > 24) {
         const ux = (z[0] - a[0]) / L, uy = (z[1] - a[1]) / L; ctx.fillStyle = css('--panel'); ctx.strokeStyle = col; ctx.lineWidth = 1.4;

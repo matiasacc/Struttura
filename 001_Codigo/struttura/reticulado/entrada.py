@@ -28,7 +28,7 @@ import re
 import tempfile
 from pathlib import Path
 
-from struttura.emparrillado.entrada import ErrorDeEntrada, _norm, _partir_bloques, avisar_columnas
+from struttura.emparrillado.entrada import ErrorDeEntrada, _norm, _partir_bloques, avisar_columnas, suprimir_barras
 from struttura.portico.entrada import cargar_modelo as _cargar_portico
 
 TITULOS = ["PROYECTO", "NODOS", "MATERIALES", "SECCIONES", "BARRAS", "APOYOS", "RESORTES",
@@ -39,7 +39,7 @@ _COLUMNAS = {
     "NODOS": ("id", "x", "y"),
     "MATERIALES": ("id", "e", "nu", "fy", "sadm", "alfa", "rho", "lib"),
     "SECCIONES": ("id", "tipo", "lib", "d", "t", "b", "h", "i", "a", "c", "kv", "tf", "tw"),
-    "BARRAS": ("id", "nodo_i", "nodo_j", "material", "seccion", "pandeo"),
+    "BARRAS": ("id", "nodo_i", "nodo_j", "material", "seccion", "pandeo", "suprimida"),
     "APOYOS": ("nodo", "ux", "uy"),
     "RESORTES": ("nodo", "kx", "ky"),
     "RESORTES INCLINADOS": ("nodo", "k", "angulo"),
@@ -178,6 +178,7 @@ def cargar_modelo(ruta):
     if not ruta.is_file():
         raise ErrorDeEntrada(f"No se encuentra el archivo '{ruta}'")
     bloques = _partir_bloques(ruta, TITULOS)
+    suprimidas = suprimir_barras(bloques)
     lineas, mapa, pandeo, sin_I = _convertir(bloques)
     with tempfile.TemporaryDirectory() as d:
         tmp = Path(d) / ruta.name
@@ -191,5 +192,7 @@ def cargar_modelo(ruta):
     m.ret_pandeo = {k: pandeo[b.id] for k, b in enumerate(m.barras)}
     m.ret_sin_I = set(sin_I)
     m.avisos = [a for a in m.avisos if "articulad" not in a.lower()]
+    if suprimidas:
+        m.avisos.append("Nota: barras suprimidas (no entran al cálculo; siguen en el archivo): " + ", ".join(suprimidas))
     avisar_columnas(bloques, m.avisos, _COLUMNAS)
     return m

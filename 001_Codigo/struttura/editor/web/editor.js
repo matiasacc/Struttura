@@ -207,7 +207,7 @@ function detalle(tipo, id) {
   }
   if (tipo === 'secciones') {
     const b = blk('SECCIONES'), f = b && b.filas.find(x => get(b, x, 'id') === id); if (!f) return '';
-    if (low(get(b, f, 'tipo')) === 'perfil') { const m = S.bib.perfiles.find(x => x.n === get(b, f, 'lib')); return m ? m.t : 'perfil de la biblioteca (elegir)'; }
+    if (low(get(b, f, 'tipo')) === 'perfil') { const m = S.bib.perfiles.find(x => x.n === get(b, f, 'lib')); return m ? (m.nm || m.t) : 'perfil de la biblioteca (elegir)'; }
     const cd = colDe('SECCIONES', 'tipo'); const forma = nombreOpc(cd, low(get(b, f, 'tipo')));
     const u = (esq().seccion_campos[low(get(b, f, 'tipo'))] || { ob: [], op: [] }); const campos = [...u.ob, ...u.op].filter(c => get(b, f, c));
     return forma + (campos.length ? ' · ' + campos.map(c => `${c} = ${get(b, f, c)}`).join(', ') : '');
@@ -269,6 +269,11 @@ function control(b, f, col, o = {}) {
     cambio(); renderInspector();
   };
   const tras = () => { renderInspector(); if (o.tabla && S.bloque === b.t) renderTabla(); };
+  if (col.n === 'suprimida') {                              // barra suprimida: sigue en el archivo pero no entra al cálculo
+    const inp = el('select', { title: col.ay, onchange: e => { mut(() => set(b, f, col.n, e.target.value)); tras(); if (window.V) V.dibujar(); } },
+      el('option', { value: '' }, 'Activa'), el('option', { value: '1' }, 'Suprimida'));
+    inp.value = esSi(v) ? '1' : ''; return inp;
+  }
   if (col.t === 'flag' && b.t !== 'APOYOS') {              // por ahora solo la articulación de las barras del pórtico plano
     const inp = el('select', { title: col.ay, onchange: e => { mut(() => set(b, f, col.n, e.target.value)); tras(); } },
       el('option', { value: '' }, 'Rígida'), el('option', { value: '1' }, 'Articulada (M = 0)'));
@@ -430,10 +435,10 @@ function avisoBiblioteca(sp) {                 // si no se encuentra el archivo,
 }
 function opcionesPerfiles(lista) {              // desplegable agrupado por familia (IPN, IPE, W, tubos...)
   const grupos = new Map(); lista.forEach(m => { if (!grupos.has(m.f)) grupos.set(m.f, []); grupos.get(m.f).push(m); });
-  return [...grupos].map(([f, ms]) => el('optgroup', { label: NOMBRE_FAMILIA[f] || f }, ms.map(m => el('option', { value: m.n }, `${m.n}: ${m.t}`))));
+  return [...grupos].map(([f, ms]) => el('optgroup', { label: NOMBRE_FAMILIA[f] || f }, ms.map(m => el('option', { value: m.n }, `${m.n}: ${m.nm || m.t}`))));
 }
-const NOMBRE_FAMILIA = { IPN: 'IPN', IPB: 'IPB', IPBl: 'IPBl', IPBv: 'IPBv', IPE: 'IPE', W: 'W (ala ancha)', HP: 'HP', M: 'M', UPN: 'UPN (canal)', C: 'C (canal americano)', MC: 'MC (canal americano)',
-  L: 'Ángulos L', T: 'Tes T', TC: 'Tubo circular', TQ: 'Tubo cuadrado', TR: 'Tubo rectangular' };
+const NOMBRE_FAMILIA = { IPN: 'Doble T · IPN', IPB: 'Doble T · IPB', IPBl: 'Doble T · IPBl', IPBv: 'Doble T · IPBv', IPE: 'Doble T · IPE', W: 'Doble T · W (ala ancha)', HP: 'Doble T · HP', M: 'Doble T · M',
+  UPN: 'Canal · UPN', C: 'Canal · C (americano)', MC: 'Canal · MC (americano)', L: 'Ángulos L', T: 'Tes T', TC: 'Tubo circular (TC)', TQ: 'Tubo cuadrado (TQ)', TR: 'Tubo rectangular (TR)' };
 function idPerfil(n) {                          // nombre en el modelo = designación del perfil (único)
   const m = S.bib.perfiles.find(x => x.n === n); const base = m ? m.t : 'perfil'; const usados = new Set(ids('SECCIONES', 'id'));
   let id = base, k = 2; while (usados.has(id)) id = `${base} (${k++})`; return id;

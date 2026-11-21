@@ -23,7 +23,7 @@ from pathlib import Path
 
 import numpy as np
 
-from struttura.emparrillado.entrada import ErrorDeEntrada, _flag, _norm, _num, _partir_bloques, _tabla, avisar_columnas
+from struttura.emparrillado.entrada import ErrorDeEntrada, _flag, _norm, _num, _partir_bloques, _tabla, suprimir_barras, avisar_columnas
 from struttura.emparrillado.secciones import Seccion, crear_seccion
 
 from ..falla_plana import resolver_teoria
@@ -39,7 +39,7 @@ _COLUMNAS = {
     "NODOS": ("id", "x", "y"),
     "MATERIALES": ("id", "e", "nu", "fy", "sadm", "alfa", "sut", "suc", "teoria", "rho", "lib"),
     "SECCIONES": ("id", "tipo", "lib", "d", "t", "b", "h", "i", "a", "c", "kv", "tf", "tw"),
-    "BARRAS": ("id", "nodo_i", "nodo_j", "material", "seccion", "art_i", "art_j", "pandeo"),
+    "BARRAS": ("id", "nodo_i", "nodo_j", "material", "seccion", "art_i", "art_j", "pandeo", "suprimida"),
     "APOYOS": ("nodo", "ux", "uy", "phi"),
     "RESORTES": ("nodo", "kx", "ky", "kphi"),
     "RESORTES INCLINADOS": ("nodo", "k", "angulo"),
@@ -151,6 +151,7 @@ def cargar_modelo(ruta) -> Modelo:
     if not ruta.is_file():
         raise ErrorDeEntrada(f"No se encuentra el archivo '{ruta}'")
     bloques = _partir_bloques(ruta, TITULOS)
+    suprimidas = suprimir_barras(bloques)
     faltan = [t for t in OBLIGATORIOS if _norm(t) not in bloques]
     if faltan:
         raise ErrorDeEntrada(
@@ -158,6 +159,8 @@ def cargar_modelo(ruta) -> Modelo:
             f"contiene solo su título.  Bloques encontrados: "
             f"{', '.join(b['titulo'] for b in bloques.values()) or 'ninguno'}")
     avisos: list[str] = []
+    if suprimidas:
+        avisos.append("Nota: barras suprimidas (no entran al cálculo; siguen en el archivo): " + ", ".join(suprimidas))
     config = _leer_config(bloques, ruta, avisos)
     avisar_columnas(bloques, avisos, _COLUMNAS)
     nodos, idx = _leer_nodos(bloques)

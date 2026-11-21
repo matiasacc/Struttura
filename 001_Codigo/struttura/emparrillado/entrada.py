@@ -190,6 +190,41 @@ def _partir_bloques(ruta: Path, titulos=None) -> dict:
     return bloques
 
 
+_SI_SUPR = ("1", "si", "sí", "s", "x", "true", "yes")
+
+
+def suprimir_barras(bloques) -> list:
+    """Barras con 'suprimida' = 1 en BARRAS: salen del cálculo pero quedan en el archivo (como «suprimir» en un programa de elementos
+    finitos).  Se quitan de BARRAS y las filas de CARGAS EN BARRAS, SOLDADURAS y PUNTOS DE TENSION que las nombran.
+    Devuelve los ids suprimidos.  Los nodos y los resortes que se pongan en ellos siguen como están."""
+    b = bloques.get(_norm("BARRAS"))
+    if not b or len(b["filas"]) < 2:
+        return []
+    cab = [c.lower() for c in b["filas"][0][1]]
+    if "suprimida" not in cab or "id" not in cab:
+        return []
+    ic, isup = cab.index("id"), cab.index("suprimida")
+    sup, nuevas = [], [b["filas"][0]]
+    for n, v in b["filas"][1:]:
+        if len(v) > isup and v[isup].strip().lower() in _SI_SUPR:
+            sup.append(v[ic] if len(v) > ic else "")
+        else:
+            nuevas.append((n, v))
+    b["filas"] = nuevas
+    if not sup:
+        return []
+    for t in ("CARGAS EN BARRAS", "SOLDADURAS", "PUNTOS DE TENSION"):
+        bl = bloques.get(_norm(t))
+        if not bl or len(bl["filas"]) < 2:
+            continue
+        cb = [c.lower() for c in bl["filas"][0][1]]
+        if "barra" not in cb:
+            continue
+        k = cb.index("barra")
+        bl["filas"] = [bl["filas"][0]] + [(n, v) for n, v in bl["filas"][1:] if not (len(v) > k and v[k] in sup)]
+    return sup
+
+
 def _tabla(bloques, titulo, obligatorias, requerido=True):
     """Filas de un bloque con encabezado: lista de (nro_linea, dict columna->texto) o None."""
     b = bloques.get(_norm(titulo))
@@ -237,7 +272,7 @@ _COLUMNAS = {
     "NODOS": ("id", "x", "y"),
     "MATERIALES": ("id", "e", "g", "nu", "fy", "sadm", "alfa", "sut", "suc", "teoria", "rho", "lib"),
     "SECCIONES": ("id", "tipo", "lib", "d", "t", "b", "h", "i", "j", "a", "c", "wt", "kv", "tf", "tw"),
-    "BARRAS": ("id", "nodo_i", "nodo_j", "material", "seccion", "art_i", "art_j"),
+    "BARRAS": ("id", "nodo_i", "nodo_j", "material", "seccion", "art_i", "art_j", "suprimida"),
     "APOYOS": ("nodo", "uz", "phix", "phiy"),
     "RESORTES": ("nodo", "kz", "kphix", "kphiy"),
     "RESORTES GIRO INCLINADO": ("nodo", "k", "angulo"),
@@ -281,6 +316,7 @@ def cargar_modelo(ruta) -> Modelo:
     if not ruta.is_file():
         raise ErrorDeEntrada(f"No se encuentra el archivo '{ruta}'")
     bloques = _partir_bloques(ruta)
+    suprimidas = suprimir_barras(bloques)
     faltan = [t for t in OBLIGATORIOS if _norm(t) not in bloques]
     if faltan:
         raise ErrorDeEntrada(
@@ -288,6 +324,8 @@ def cargar_modelo(ruta) -> Modelo:
             f"contiene solo su título.  Bloques encontrados: "
             f"{', '.join(b['titulo'] for b in bloques.values()) or 'ninguno'}")
     avisos: list[str] = []
+    if suprimidas:
+        avisos.append("Nota: barras suprimidas (no entran al cálculo; siguen en el archivo): " + ", ".join(suprimidas))
 
     config = _leer_config(bloques, ruta, avisos)
     avisar_columnas(bloques, avisos, _COLUMNAS)

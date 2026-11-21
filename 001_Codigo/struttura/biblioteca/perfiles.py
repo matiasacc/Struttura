@@ -27,6 +27,48 @@ def listar():
     return [(r["n"], r["ref"], r["familia"]) for r in _leer()]
 
 
+_FORMA = {"I": "Doble T", "canal": "Canal", "L": "Ángulo", "T": "Te", "circular": "Tubo circular",
+          "cuadrado": "Tubo cuadrado", "rectangular": "Tubo rectangular"}
+
+
+def _pulg(mm, fraccion=True):
+    """mm → pulgadas (25,4 mm = 1 in, exacto): fracción de 1/16 si coincide (±0,003 in), si no decimal con 3 cifras."""
+    x = mm / 25.4
+    if fraccion:
+        k = round(x * 16)
+        if k > 0 and abs(x - k / 16) < 0.003:
+            ent, num = divmod(k, 16)
+            if num == 0:
+                return f'{ent}"'
+            from math import gcd
+            g = gcd(num, 16)
+            fr = f"{num // g}/{16 // g}"
+            return f'{ent} {fr}"' if ent else f'{fr}"'
+    return f'{x:.3f}"'.replace("0.", ".", 1) if x < 1 else f'{x:.3f}"'
+
+
+def titulo(r):
+    """Nombre completo para mostrar: «Tubo circular TC 60.3 x 3.6 (2 3/8" × .142")».  Los tubos traen además las medidas en pulgadas
+    (conversión exacta de las medidas de la tabla; no es otro dato)."""
+    base = f"{_FORMA.get(r.get('forma', ''), '')} {r['ref']}".strip()
+    forma = r.get("forma", "")
+    try:
+        if forma == "circular":
+            return f'{base}  (Ø {_pulg(float(r["d_mm"]))} × {_pulg(float(r["t_mm"]), False)})'
+        if forma in ("cuadrado", "rectangular"):
+            return f'{base}  ({_pulg(float(r["b_mm"]))} × {_pulg(float(r["d_mm"]))} × {_pulg(float(r["t_mm"]), False)})'
+    except (KeyError, ValueError):
+        return base
+    if forma in ("L", "T") and r.get("comercial"):
+        return f'{base}  ({r["comercial"]})'
+    return base
+
+
+def titulos():
+    """{n: nombre completo} para el desplegable del editor."""
+    return {r["n"]: titulo(r) for r in _leer()}
+
+
 def cargar(n):
     for r in _leer():
         if r["n"] == str(n).strip() or r["ref"].lower() == str(n).strip().lower():

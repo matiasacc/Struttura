@@ -681,3 +681,46 @@ class TestValorAlPasarElMouse(unittest.TestCase):
             fuente = open(modulo.__file__, encoding="utf-8").read()
             self.assertIn("valor al pasar el mouse", fuente, modulo.__name__)
             self.assertIn("hov: false", fuente, modulo.__name__)
+
+
+class TestBarraSuprimida(unittest.TestCase):
+    """`suprimida;1` en BARRAS: la barra sale del cálculo, queda en el archivo y se avisa con una Nota."""
+
+    RAIZ = os.path.join(os.path.dirname(__file__), "..", "003_Ejemplos")
+    CASOS = [("portico3d", "004_Portico_espacial/ejemplo2_portico_espacial.csv"),
+             ("portico", "002_Portico/ejemplo4_temperatura_y_puntuales.csv"),
+             ("emparrillado", "001_Emparrillado/ejemplo6_cargas_en_tramos.csv"),
+             ("reticulado", "003_Reticulado/ejemplo5_cercha_con_pandeo.csv")]
+
+    def _con_suprimida(self, ruta):
+        lineas = open(ruta, encoding="utf-8").read().splitlines()
+        i = next(k for k, l in enumerate(lineas) if l.strip().upper() == "BARRAS")
+        j = i + 1
+        lineas[j] = lineas[j] + ";suprimida"
+        k = j + 1
+        while k < len(lineas) and lineas[k].strip() and not lineas[k].strip().upper().isalpha() and ";" in lineas[k]:
+            k += 1
+        n_cols = lineas[j].count(";") + 1
+        ultima = k - 1
+        falt = n_cols - 1 - (lineas[ultima].count(";") + 1)
+        lineas[ultima] = lineas[ultima] + ";" * (falt + 1) + "1"
+        return "\n".join(lineas) + "\n", lineas[ultima].split(";")[0]
+
+    def test_la_barra_sale_del_calculo(self):
+        import importlib
+        import tempfile
+        for prog, rel in self.CASOS:
+            ruta = os.path.join(self.RAIZ, rel)
+            cargar = importlib.import_module(f"struttura.{prog}.entrada").cargar_modelo
+            n0 = len(cargar(ruta).barras)
+            texto, ident = self._con_suprimida(ruta)
+            with tempfile.TemporaryDirectory() as d:
+                f = os.path.join(d, "m.csv")
+                with open(f, "w", encoding="utf-8") as h:
+                    h.write(texto)
+                try:
+                    m = cargar(f)
+                except Exception as e:                       # quitar la barra puede dejar el modelo inestable o sin cargas: eso no es lo que se prueba
+                    self.fail(f"{prog}: {e}")
+            self.assertEqual(len(m.barras), n0 - 1, prog)
+            self.assertTrue(any(a.startswith("Nota: barras suprimidas") and ident in a for a in m.avisos), (prog, m.avisos))

@@ -222,7 +222,8 @@ def bibliotecas():
         from ..biblioteca import perfiles as p
         out["archivo_perfiles"] = str(p.archivo())
         out["existe_perfiles"] = p.archivo().is_file()
-        out["perfiles"] = [{"n": str(n), "t": t, "f": f} for n, t, f in p.listar()]
+        tit = p.titulos()
+        out["perfiles"] = [{"n": str(n), "t": t, "f": f, "nm": tit.get(str(n), t)} for n, t, f in p.listar()]
     except Exception:
         pass
     from ..soldadura.datos import ELECTRODOS

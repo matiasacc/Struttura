@@ -497,7 +497,7 @@ class TestPagina(unittest.TestCase):
             pg.wait_for_function("document.querySelector('#tabla-wrap input.de-lib')")     # A, I... de la biblioteca como valor sugerido
             ph = pg.eval_on_selector_all("#tabla-wrap input.de-lib", "els => els.map(e => e.placeholder)")
             self.assertTrue(any("2850" in x or "2 850" in x for x in ph), ph)
-            self.assertEqual(pg.evaluate("detalle('secciones', 'IPE 200')"), "IPE 200")
+            self.assertEqual(pg.evaluate("detalle('secciones', 'IPE 200')"), "Doble T IPE 200")
             # el desplegable de la celda lib agrupa por familia
             self.assertGreater(pg.evaluate("document.querySelectorAll('#tabla-wrap select.lib optgroup').length"), 10)
         self.assertEqual(self.errs, [])
@@ -538,6 +538,16 @@ class TestPagina(unittest.TestCase):
         self.assertIn("52500", pg.inner_text("#modal .resultado-k"))
         pg.get_by_text("Agregar fila con este k").click()
         self.assertEqual(pg.evaluate("get(blk('RESORTES INCLINADOS'), filas('RESORTES INCLINADOS')[0], 'k')"), "52500")
+        self.assertEqual(self.errs, [])
+        pg.close()
+
+    def test_suprimir_una_barra(self):
+        pg = self.pagina()
+        self.abrir(pg, str(RAIZ / "003_Ejemplos" / "004_Portico_espacial" / "ejemplo2_portico_espacial.csv"))
+        pg.evaluate("t => irBloque(t)", "BARRAS")
+        sel = pg.locator("#tabla-wrap tbody tr").first.locator("select").last
+        sel.select_option(label="Suprimida")
+        self.assertEqual(pg.evaluate("get(blk('BARRAS'), filas('BARRAS')[0], 'suprimida')"), "1")
         self.assertEqual(self.errs, [])
         pg.close()
 

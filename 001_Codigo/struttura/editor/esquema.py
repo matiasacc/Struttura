@@ -131,6 +131,8 @@ def barras(dim, art, rot=False, pandeo=True):
                  C("art_j", art["t"], art["ay"] + " (extremo j)", art.get("op"))]
     if pandeo:
         cols.append(C("pandeo", "opc", "Condición de extremos para el pandeo de Euler (defecto art-art): K = 1, 2, 1/√2, 1/2", PANDEO, d="art-art"))
+    cols.append(C("suprimida", "flag", "Barra suprimida: queda en el archivo pero no entra al cálculo (sus cargas, soldaduras y puntos de tensión tampoco). "
+                  "Para reemplazarla por su rigidez, poner un resorte en el nodo (botón «Calcular k de una barra»)"))
     return bloque("BARRAS", cols, "Barras: de un nodo a otro, con su material y su sección.", ob=True, min=["id", "nodo_i", "nodo_j", "material", "seccion"])
 
 

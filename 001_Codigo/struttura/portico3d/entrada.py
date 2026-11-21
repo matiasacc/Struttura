@@ -36,7 +36,7 @@ import numpy as np
 
 from ..pandeo import VALORES as PANDEO_VALORES, codigo as pandeo_codigo
 
-from struttura.emparrillado.entrada import ErrorDeEntrada, _norm, _num, _partir_bloques, _tabla
+from struttura.emparrillado.entrada import ErrorDeEntrada, _norm, _num, _partir_bloques, _tabla, suprimir_barras
 from struttura.emparrillado.secciones import crear_seccion
 
 from .barra import (condensar, descripcion_articulacion, gdl_liberados, parsear_articulacion, rigidez_global,
@@ -162,11 +162,14 @@ def cargar_modelo(ruta) -> Modelo:
     if not ruta.is_file():
         raise ErrorDeEntrada(f"No se encuentra el archivo '{ruta}'")
     bloques = _partir_bloques(ruta, TITULOS)
+    suprimidas = suprimir_barras(bloques)
     faltan = [t for t in OBLIGATORIOS if _norm(t) not in bloques]
     if faltan:
         raise ErrorDeEntrada(f"Faltan bloques obligatorios: {', '.join(faltan)}.  Bloques encontrados: "
                              f"{', '.join(b['titulo'] for b in bloques.values()) or 'ninguno'}")
     avisos: list[str] = []
+    if suprimidas:
+        avisos.append("Nota: barras suprimidas (no entran al cálculo; siguen en el archivo): " + ", ".join(suprimidas))
     _avisar_columnas(bloques, avisos)
     config = _leer_config(bloques, ruta, avisos)
     nodos, idx = _leer_nodos(bloques)
@@ -208,7 +211,7 @@ _COLUMNAS = {
     "NODOS": ("id", "x", "y", "z"),
     "MATERIALES": ("id", "e", "g", "nu", "fy", "sadm", "alfa", "sut", "suc", "teoria", "rho", "lib"),
     "SECCIONES": ("id", "tipo", "lib", "a", "iy", "iz", "j", "cy", "cz", "wt", "d", "t", "b", "h", "tf", "tw"),
-    "BARRAS": ("id", "nodo_i", "nodo_j", "material", "seccion", "rx", "ry", "rz", "giro", "art_i", "art_j", "pandeo"),
+    "BARRAS": ("id", "nodo_i", "nodo_j", "material", "seccion", "rx", "ry", "rz", "giro", "art_i", "art_j", "pandeo", "suprimida"),
     "APOYOS": ("nodo", "ux", "uy", "uz", "phix", "phiy", "phiz"),
     "RESORTES": ("nodo", "kx", "ky", "kz", "kphix", "kphiy", "kphiz"),
     "RESORTES INCLINADOS": ("nodo", "k", "dx", "dy", "dz", "ax", "ay", "az"),

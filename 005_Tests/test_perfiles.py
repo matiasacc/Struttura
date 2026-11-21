@@ -258,3 +258,19 @@ class TestNotas(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestTitulosDePerfiles(unittest.TestCase):
+    """El desplegable muestra el nombre de la sección en palabras; los tubos traen además las pulgadas (conversión exacta)."""
+
+    def test_titulos(self):
+        from struttura.biblioteca import perfiles as p
+        t = p.titulos()
+        if not t:
+            self.skipTest("no hay biblioteca de perfiles en esta copia")
+        n = next(r["n"] for r in p._leer() if r["ref"] == "TC 12.7 x 0.7")
+        self.assertEqual(t[n], 'Tubo circular TC 12.7 x 0.7  (Ø 1/2" × .028")')
+        n = next(r["n"] for r in p._leer() if r["ref"] == "TC 76.2 x 2")
+        self.assertIn('Ø 3"', t[n])
+        n = next(r["n"] for r in p._leer() if r["ref"] == "IPE 200")
+        self.assertEqual(t[n], "Doble T IPE 200")

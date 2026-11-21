@@ -55,7 +55,7 @@ COLS = {
     ("BARRAS", "material"): ("Material", ""), ("BARRAS", "seccion"): ("Sección", ""),
     ("BARRAS", "rx"): ("Orientación: componente x", ""), ("BARRAS", "ry"): ("Orientación: componente y", ""), ("BARRAS", "rz"): ("Orientación: componente z", ""),
     ("BARRAS", "giro"): ("Giro de la sección", "deg"), ("BARRAS", "art_i"): ("Articulación en i", ""), ("BARRAS", "art_j"): ("Articulación en j", ""),
-    ("BARRAS", "pandeo"): ("Apoyo de los extremos (pandeo)", ""),
+    ("BARRAS", "pandeo"): ("Apoyo de los extremos (pandeo)", ""), ("BARRAS", "suprimida"): ("Estado de la barra", ""),
     # --- apoyos y resortes
     (None, "nodo"): ("Nodo", ""),
     ("APOYOS", "ux"): ("Desplazamiento en x", ""), ("APOYOS", "uy"): ("Desplazamiento en y", ""), ("APOYOS", "uz"): ("Desplazamiento en z", ""),
