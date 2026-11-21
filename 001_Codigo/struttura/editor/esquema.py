@@ -145,15 +145,19 @@ def apoyos(cols, ay):
     return bloque("APOYOS", [C("nodo", "ref:nodos", "Nodo apoyado", ob=True)] + [C(n, "flag", t) for n, t in cols], ay, ob=True)
 
 
+PC_AY = ("Carga crítica de pandeo de la barra que este resorte reemplaza (opcional; la calcula el botón «Calcular k de una barra»). "
+         "El informe da CS pandeo = Pc/|F del resorte|; con pc la fila debe tener un solo resorte lineal")
+
+
 def resortes(cols):
-    return bloque("RESORTES", [C("nodo", "ref:nodos", "Nodo con resorte", ob=True)] + [C(n, "num", t) for n, t in cols],
+    return bloque("RESORTES", [C("nodo", "ref:nodos", "Nodo con resorte", ob=True)] + [C(n, "num", t) for n, t in cols] + [C("pc", "num", PC_AY)],
                   "Resortes elásticos en el nodo; rigidez en fuerza/longitud o momento/giro.")
 
 
 def resortes_incl(giro=False):
     return bloque("RESORTES GIRO INCLINADO" if giro else "RESORTES INCLINADOS",
                   [C("nodo", "ref:nodos", "Nodo con resorte", ob=True), C("k", "num", "Rigidez del resorte", ob=True),
-                   C("angulo", "num", "Ángulo del eje del resorte respecto de +X [grados]", ob=True)],
+                   C("angulo", "num", "Ángulo del eje del resorte respecto de +X [grados]", ob=True)] + ([] if giro else [C("pc", "num", PC_AY)]),
                   "Resorte cuyo eje forma un ángulo con +X.")
 
 
@@ -163,7 +167,7 @@ def resortes_incl3d():
                    C("dx", "num", "Dirección del resorte: componente en x (vector; se normaliza)"), C("dy", "num", "Dirección del resorte: componente en y"),
                    C("dz", "num", "Dirección del resorte: componente en z"),
                    C("ax", "num", "Ángulo del resorte con el eje X [grados]"), C("ay", "num", "Ángulo del resorte con el eje Y [grados]"),
-                   C("az", "num", "Ángulo del resorte con el eje Z [grados]")],
+                   C("az", "num", "Ángulo del resorte con el eje Z [grados]"), C("pc", "num", PC_AY)],
                   "Resorte lineal a tierra en una dirección cualquiera.  Dar la dirección con el vector (dx; dy; dz) o con los ángulos que forma con X, Y, Z "
                   "(con dos ángulos alcanza: el tercero se calcula).  Se pueden poner varios resortes en un nodo.", min=["nodo", "k"])
 

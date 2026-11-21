@@ -317,7 +317,7 @@ function control(b, f, col, o = {}) {
   const inp = el('input', { type: 'text', value: v, title: col.ay + (uso === 'no' ? '\n(Esta forma de sección no usa este dato.)' : ''), class: (col.n === 'id' ? 'id ' : '') + (uso === 'no' ? 'no-usa ' : '') + (lib != null ? 'de-lib' : ''),
     list: lista, autocomplete: 'off', spellcheck: 'false', 'data-r': o.r, 'data-c': o.c,
     placeholder: lib != null ? fmt(lib) : (uso === 'ob' ? 'obligatorio' : uso === 'no' ? '—' : ''),
-    onfocus: e => { e.target.dataset.prev = e.target.value; },
+    onfocus: e => { e.target.dataset.prev = e.target.value; S.celda = { t: b.t, f, n: col.n }; },
     oninput: e => {
       if (S.pend == null) S.pend = snap();
       set(b, f, col.n, e.target.value); S.sucio = true;
@@ -397,33 +397,52 @@ function renderTabla() {
   ajustarAncho();
 }
 function botonCalcK(sp) { return ['RESORTES', 'RESORTES INCLINADOS'].includes(sp.t) ? el('button', { title: 'Calcula la rigidez axial de una barra, k = E·A/L', onclick: () => calculadoraK(sp) }, 'Calcular k de una barra (EA/L)') : null; }
-function calculadoraK(sp) {                    // rigidez axial de una barra como resorte: k = E·A/L  (Gere & Goodno, cap. 2)
+const EXTREMOS = [['art-art', 'articulado – articulado', 1], ['emp-lib', 'empotrado – libre', 2], ['emp-art', 'empotrado – articulado', 1 / Math.sqrt(2)], ['emp-emp', 'empotrado – empotrado', 0.5]];
+function calculadoraK(sp) {                    // k = E·A/L (Gere & Goodno, cap. 2) y carga crítica de Euler Pc = π²·E·I/(K·L)²; se escribe en la celda elegida
   const uF = unidad('F'), uL = unidad('L');
   const num_ = (t, dst) => { const c = convertirUnidad(t, dst); if (c && c.v != null) return parseFloat(String(c.v).replace(',', '.')); if (c && c.err) return NaN; const x = parseFloat(String(t).replace(',', '.')); return isFinite(x) && String(t).trim() !== '' ? x : NaN; };
-  const campos = {};
+  const b0 = blk(sp.t, true), kCols = sp.cols.filter(c => /^k[xyz]?$/.test(c.n));
+  const cel = S.celda && S.celda.t === sp.t && b0.filas.includes(S.celda.f) ? S.celda : null;            // celda que el usuario tocó antes
+  const filaDest = cel ? cel.f : null, colDest = cel && kCols.some(c => c.n === cel.n) ? cel.n : (kCols.length === 1 ? kCols[0].n : null);
+  const campos = {}, R = {};
   const mats = filas('MATERIALES').map(f => get(blk('MATERIALES'), f, 'id')).filter(Boolean), secs = filas('SECCIONES').map(f => get(blk('SECCIONES'), f, 'id')).filter(Boolean);
-  const salida = el('div', { class: 'resultado-k' }), col = sp.t === 'RESORTES' ? el('select', {}, sp.cols.filter(c => /^k[xyz]?$/.test(c.n)).map(c => el('option', { value: c.n }, c.et || c.n))) : null;
+  const salida = el('div', { class: 'resultado-k' });
+  const colSel = kCols.length > 1 ? el('select', { onchange: () => { } }, kCols.map(c => el('option', { value: c.n }, c.et || c.n))) : null;
+  if (colSel && colDest) colSel.value = colDest;
   const calc = () => {
-    const E = num_(campos.E.value, `${uF}/${uL}²`), A = num_(campos.A.value, `${uL}²`), L = num_(campos.L.value, uL);
-    const k = E * A / L; campos.k = isFinite(k) && L > 0 ? k : null;
-    salida.textContent = campos.k == null ? 'Completar E, A y L (con unidades válidas)' : `k = E·A/L = ${fmt(campos.k)} ${uF}/${uL}`;
+    const E = num_(campos.E.value, `${uF}/${uL}²`), A = num_(campos.A.value, `${uL}²`), L = num_(campos.L.value, uL), I = num_(campos.I.value, `${uL}⁴`.replace('⁴', '4'));
+    const K = EXTREMOS[campos.X.value][2], k = E * A / L; R.k = isFinite(k) && L > 0 && k > 0 ? k : null;
+    R.pc = R.k != null && isFinite(I) && I > 0 ? Math.PI ** 2 * E * I / (K * L) ** 2 : null; R.lam = R.pc != null ? K * L / Math.sqrt(I / A) : null;
+    salida.textContent = ''; salida.append(R.k == null ? 'Completar E, A y L (con unidades válidas)' : `k = E·A/L = ${fmt(R.k)} ${uF}/${uL}`);
+    if (R.pc != null) salida.append(el('br'), `Pc = π²·E·I/(K·L)² = ${fmt(R.pc)} ${uF}   (K = ${fmt(K)}, λ = KL/r = ${fmt(R.lam)})`);
+    else if (campos.I.value.trim()) salida.append(el('br'), 'I no válida');
   };
   const fila = (txt, ayuda, inp) => el('label', { class: 'fila-k', title: ayuda }, txt, inp);
-  campos.E = el('input', { type: 'text', placeholder: `E [${uF}/${uL}²]`, oninput: calc, autocomplete: 'off' });
-  campos.A = el('input', { type: 'text', placeholder: `A [${uL}²]`, oninput: calc, autocomplete: 'off' });
-  campos.L = el('input', { type: 'text', placeholder: `L [${uL}]`, oninput: calc, autocomplete: 'off' });
+  const mk = (ph, f) => el('input', { type: 'text', placeholder: ph, oninput: f || calc, autocomplete: 'off' });
+  campos.E = mk(`E [${uF}/${uL}²]`); campos.A = mk(`A [${uL}²]`); campos.L = mk(`L [${uL}]`); campos.I = mk(`I [${uL}⁴] (opcional, para Pc)`);
+  campos.X = el('select', { onchange: calc }, EXTREMOS.map((x, i) => el('option', { value: i }, `${x[1]} (K = ${fmt(x[2])})`)));
   const deMat = el('select', { onchange: e => { const b = blk('MATERIALES'), f = b.filas.find(x => get(b, x, 'id') === e.target.value); if (!f) return; const lib = get(b, f, 'lib'); const v = get(b, f, 'e') || (lib && (fichaDe('material', lib) || {}).e); if (v != null && v !== '') campos.E.value = String(v); calc(); } },
     el('option', { value: '' }, 'o tomar de un material del modelo…'), mats.map(m => el('option', { value: m }, m)));
-  const deSec = el('select', { onchange: e => { const b = blk('SECCIONES'), f = b.filas.find(x => get(b, x, 'id') === e.target.value); if (!f) return; const v = get(b, f, 'a') || deBiblioteca(b, f, 'a'); if (v != null && v !== '') campos.A.value = String(v); calc(); } },
+  const deSec = el('select', { onchange: e => { const b = blk('SECCIONES'), f = b.filas.find(x => get(b, x, 'id') === e.target.value); if (!f) return;
+      const g = c => { const v = get(b, f, c) || deBiblioteca(b, f, c); return v != null && v !== '' ? v : null; };
+      if (g('a') != null) campos.A.value = String(g('a'));
+      const ii = [g('iy'), g('iz')].filter(v => v != null).map(Number).filter(isFinite); if (ii.length) campos.I.value = String(Math.min(...ii));       // eje débil
+      calc(); } },
     el('option', { value: '' }, 'o tomar de una sección del modelo…'), secs.map(m => el('option', { value: m }, m)));
   calc();
-  modal(el('div', { class: 'caja' }, el('h3', {}, 'Rigidez axial de una barra: k = E·A/L'),
+  const destino = cel ? `fila ${b0.filas.indexOf(cel.f) + 1}${colDest ? ' · ' + ((kCols.find(c => c.n === colDest) || {}).et || colDest) : ''}` : 'una fila nueva';
+  modal(el('div', { class: 'caja' }, el('h3', {}, 'Rigidez y pandeo de una barra: k = E·A/L'),
     el('div', { class: 'cuerpo' },
-      el('p', { class: 'nota' }, `Se puede escribir con unidad («210 GPa», «5 cm2», «2 m»); se pasa a ${uF}, ${uL}.  Fuente: Gere & Goodno, cap. 2 (rigidez axial de una barra prismática).  Vale para una barra recta de sección constante cargada axialmente.`),
-      fila('E', 'Módulo de elasticidad', campos.E), deMat, fila('A', 'Área de la sección', campos.A), deSec, fila('L', 'Longitud de la barra', campos.L), salida,
-      col ? fila('Poner k en', 'Columna de la tabla donde se escribe el valor', col) : null),
+      el('p', { class: 'nota' }, `Se puede escribir con unidad («210 GPa», «5 cm2», «2 m»); se pasa a ${uF}, ${uL}.  Fuentes: Gere & Goodno, cap. 2 (rigidez axial) y tabla de la cátedra para la carga crítica de Euler.  Vale para una barra recta de sección constante, material elástico y columna esbelta (el programa no verifica el rango de validez de Euler).`),
+      el('p', { class: 'nota' }, [el('b', {}, 'Se escribe en: '), destino, cel ? '' : '  (tocá antes una celda de k de la tabla para elegir dónde)']),
+      fila('E', 'Módulo de elasticidad', campos.E), deMat, fila('A', 'Área de la sección', campos.A), fila('I', 'Momento de inercia del eje débil (para la carga crítica)', campos.I), deSec,
+      fila('L', 'Longitud de la barra', campos.L), fila('Extremos', 'Condición de extremos para el pandeo', campos.X), salida, colSel ? fila('Poner k en', 'Columna donde se escribe k', colSel) : null),
     el('div', { class: 'pie' }, el('button', { onclick: cerrarModal }, 'Cancelar'),
-      el('button', { class: 'principal', onclick: () => { if (campos.k == null) return; agregarFila({ [col ? col.value : 'k']: fmt(campos.k) }); cerrarModal(); } }, 'Agregar fila con este k'))));
+      el('button', { class: 'principal', onclick: () => {
+        if (R.k == null) return;
+        const col = colSel ? colSel.value : (colDest || 'k'), valores = { [col]: fmt(R.k) }; if (R.pc != null) valores.pc = fmt(R.pc);
+        if (filaDest) mut(() => { for (const [c, v] of Object.entries(valores)) set(b0, filaDest, c, v); }); else agregarFila(valores);
+        cerrarModal(); renderTabla(); renderInspector(); } }, cel ? 'Escribir en la celda' : 'Agregar fila con estos valores'))));
 }
 function avisoBiblioteca(sp) {                 // si no se encuentra el archivo, se dice dónde se lo busca y qué hacer
   const per = sp.t === 'SECCIONES';

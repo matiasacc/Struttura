@@ -724,3 +724,55 @@ class TestBarraSuprimida(unittest.TestCase):
                     self.fail(f"{prog}: {e}")
             self.assertEqual(len(m.barras), n0 - 1, prog)
             self.assertTrue(any(a.startswith("Nota: barras suprimidas") and ident in a for a in m.avisos), (prog, m.avisos))
+
+
+class TestPandeoDeBarraReemplazadaPorResorte(unittest.TestCase):
+    """`pc` en RESORTES / RESORTES INCLINADOS: CS pandeo = Pc/|F| con F = k·(d·u) del resorte; vale en los cuatro programas."""
+
+    RAIZ = os.path.join(os.path.dirname(__file__), "..", "003_Ejemplos")
+
+    def _modelo(self, cargar, rel, extra_antes_de, linea_nueva):
+        import tempfile
+        t = open(os.path.join(self.RAIZ, rel), encoding="utf-8").read()
+        with tempfile.TemporaryDirectory() as d:
+            f = os.path.join(d, "m.csv")
+            with open(f, "w", encoding="utf-8") as h:
+                h.write(t + "\n" + linea_nueva + "\n")
+            return cargar(f)
+
+    def test_3d_recto_e_inclinado(self):
+        from struttura import pandeo_resortes as pr
+        from struttura.portico3d.entrada import cargar_modelo
+        from struttura.portico3d.solver import resolver
+        rel = "004_Portico_espacial/ejemplo1_voladizo_en_L.csv"
+        m = self._modelo(cargar_modelo, rel, None, "RESORTES\nnodo;kz;pc\n3;50;1000")
+        v = pr.verificar(m, resolver(m)[0]["P"])
+        u = resolver(m)[0]["P"].u[2, 2]
+        self.assertAlmostEqual(v[0]["F"], 50 * abs(u), places=9)
+        self.assertAlmostEqual(v[0]["cs"], 1000 / (50 * abs(u)), places=9)
+        m = self._modelo(cargar_modelo, rel, None, "RESORTES INCLINADOS\nnodo;k;dx;dy;dz;pc\n3;50;0;0;1;1000")
+        v2 = pr.verificar(m, resolver(m)[0]["P"])
+        self.assertAlmostEqual(v2[0]["cs"], v[0]["cs"], places=6)
+
+    def test_errores(self):
+        from struttura.portico3d.entrada import ErrorDeEntrada, cargar_modelo
+        rel = "004_Portico_espacial/ejemplo1_voladizo_en_L.csv"
+        for linea in ("RESORTES\nnodo;kx;kz;pc\n3;10;50;1000", "RESORTES\nnodo;kz;pc\n3;50;-1"):
+            with self.assertRaises(ErrorDeEntrada, msg=linea):
+                self._modelo(cargar_modelo, rel, None, linea)
+
+    def test_los_cuatro_leen_pc(self):
+        from struttura.emparrillado.entrada import cargar_modelo as ce
+        from struttura.portico.entrada import cargar_modelo as cp
+        from struttura.reticulado.entrada import cargar_modelo as cr
+        for cargar, rel, blq in ((cp, "002_Portico/ejemplo4_temperatura_y_puntuales.csv", "RESORTES\nnodo;kx;ky;kphi;pc\nXX;0;50;0;1000"),
+                                 (ce, "001_Emparrillado/ejemplo6_cargas_en_tramos.csv", "RESORTES\nnodo;kz;kphix;kphiy;pc\nXX;50;0;0;1000"),
+                                 (cr, "003_Reticulado/ejemplo5_cercha_con_pandeo.csv", "RESORTES\nnodo;kx;ky;pc\nXX;0;50;1000")):
+            t = open(os.path.join(self.RAIZ, rel), encoding="utf-8").read()
+            # un nodo existente: el primero de NODOS
+            k = t.splitlines().index("NODOS") if "NODOS" in t.splitlines() else None
+            nodo = t.splitlines()[k + 2].split(";")[0]
+            m = self._modelo(cargar, rel, None, blq.replace("XX", nodo)) if "RESORTES\n" not in t else None
+            if m is None:
+                self.skipTest(f"{rel} ya trae un bloque RESORTES")
+            self.assertEqual([r["pc"] for r in m.resortes_pc], [1000.0], rel)

@@ -529,14 +529,14 @@ class TestPagina(unittest.TestCase):
         pg = self.pagina()
         pg.evaluate("async t => cargarDoc(await api('nuevo', {tipo: t}))", "portico3d")
         self.assertTrue(pg.evaluate("!!spec('RESORTES INCLINADOS')"))
-        self.assertEqual(pg.evaluate("spec('RESORTES INCLINADOS').cols.map(c => c.n)"), ["nodo", "k", "dx", "dy", "dz", "ax", "ay", "az"])
+        self.assertEqual(pg.evaluate("spec('RESORTES INCLINADOS').cols.map(c => c.n)"), ["nodo", "k", "dx", "dy", "dz", "ax", "ay", "az", "pc"])
         pg.evaluate("t => irBloque(t)", "RESORTES INCLINADOS")
         pg.get_by_text("Calcular k de una barra (EA/L)").click()
         pg.fill("#modal input[placeholder^='E ']", "210 GPa")
         pg.fill("#modal input[placeholder^='A ']", "5 cm2")
         pg.fill("#modal input[placeholder^='L ']", "2 m")
         self.assertIn("52500", pg.inner_text("#modal .resultado-k"))
-        pg.get_by_text("Agregar fila con este k").click()
+        pg.get_by_text("Agregar fila con estos valores").click()
         self.assertEqual(pg.evaluate("get(blk('RESORTES INCLINADOS'), filas('RESORTES INCLINADOS')[0], 'k')"), "52500")
         self.assertEqual(self.errs, [])
         pg.close()
@@ -548,6 +548,31 @@ class TestPagina(unittest.TestCase):
         sel = pg.locator("#tabla-wrap tbody tr").first.locator("select").last
         sel.select_option(label="Suprimida")
         self.assertEqual(pg.evaluate("get(blk('BARRAS'), filas('BARRAS')[0], 'suprimida')"), "1")
+        self.assertEqual(self.errs, [])
+        pg.close()
+
+    def test_calculadora_escribe_k_y_pc_en_la_celda_elegida(self):
+        import math
+        pg = self.pagina()
+        pg.evaluate("async t => cargarDoc(await api('nuevo', {tipo: t}))", "portico3d")
+        pg.evaluate("t => irBloque(t)", "RESORTES")
+        pg.evaluate("agregarFila({ kx: '7' })")
+        pg.evaluate("agregarFila({})")
+        celdas = pg.locator("#tabla-wrap tbody tr").nth(1).locator("input")
+        columnas = pg.evaluate("spec('RESORTES').cols.map(c => c.n)")
+        celdas.nth(columnas.index("kz") - 1).click()      # «nodo» es un desplegable, no un input
+        #                      # el usuario toca la celda donde quiere el valor
+        pg.get_by_text("Calcular k de una barra (EA/L)").click()
+        pg.fill("#modal input[placeholder^='E ']", "210 GPa")
+        pg.fill("#modal input[placeholder^='A ']", "5 cm2")
+        pg.fill("#modal input[placeholder^='L ']", "2 m")
+        pg.fill("#modal input[placeholder^='I ']", "10 cm4")
+        self.assertIn("Pc = ", pg.inner_text("#modal .resultado-k"))
+        pg.get_by_text("Escribir en la celda").click()
+        self.assertEqual(pg.evaluate("get(blk('RESORTES'), filas('RESORTES')[1], 'kz')"), "52500")
+        pc = float(pg.evaluate("get(blk('RESORTES'), filas('RESORTES')[1], 'pc')").replace(",", "."))
+        self.assertAlmostEqual(pc, math.pi ** 2 * 210000 * 1e5 / 2000 ** 2, delta=pc * 1e-6)       # art-art, K = 1
+        self.assertEqual(pg.evaluate("get(blk('RESORTES'), filas('RESORTES')[0], 'kz')"), "")         # la otra fila no se toca
         self.assertEqual(self.errs, [])
         pg.close()
 

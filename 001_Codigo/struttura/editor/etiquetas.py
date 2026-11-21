@@ -66,6 +66,7 @@ COLS = {
     ("RESORTES INCLINADOS", "dx"): ("Dirección: componente x", ""), ("RESORTES INCLINADOS", "dy"): ("Dirección: componente y", ""),
     ("RESORTES INCLINADOS", "dz"): ("Dirección: componente z", ""), ("RESORTES INCLINADOS", "ax"): ("Ángulo con el eje X", "deg"),
     ("RESORTES INCLINADOS", "ay"): ("Ángulo con el eje Y", "deg"), ("RESORTES INCLINADOS", "az"): ("Ángulo con el eje Z", "deg"),
+    (None, "pc"): ("Carga crítica de pandeo de la barra", "F"),
     (None, "k"): ("Rigidez del resorte", "K"), (None, "angulo"): ("Ángulo del eje respecto de +x", "deg"),
     # --- cargas
     (None, "caso"): ("Caso de carga", ""),

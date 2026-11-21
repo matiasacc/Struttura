@@ -8,6 +8,8 @@ import html
 
 import numpy as np
 
+from struttura import pandeo_resortes as _pr
+
 from struttura.emparrillado.formato import fe, fg, limpiar
 from struttura.emparrillado.informe import CSS as CSS_BASE, _figura, _poli, tabla, unidad_tension
 
@@ -271,6 +273,7 @@ def generar_html(modelo: Modelo, resultados: dict, info: Info, con_graficos: boo
             p.append("<h4>Fuerzas en los resortes (ejes globales)</h4>")
             p.append(tabla(["Nodo", f"F<sub>x</sub> [{U['F']}]", f"F<sub>y</sub> [{U['F']}]", f"M [{U['M']}]"], filas, num=(1, 2, 3),
                            nota="Fuerza que el resorte ejerce sobre la estructura (= −k·(u − e); e = desajuste, 0 si no se dio)."))
+        p += _pr.tabla_html(modelo, res, tabla, fg, e_, U['F'], U['L'])
         arts = [(k, b) for k, b in enumerate(modelo.barras) if b.rel]
         if arts:
             p.append("<h4>Giros de las barras en los extremos articulados</h4>")

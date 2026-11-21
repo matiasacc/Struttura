@@ -115,6 +115,7 @@ class Modelo:
     soldaduras: list = field(default_factory=list)     # [soldadura.verificar.Soldadura] (bloque SOLDADURAS)
     electrodos: dict = field(default_factory=dict)     # electrodos propios {id: (sut, sy, tau_adm)} en MPa
     estab: list = field(default_factory=list)          # [(GDL globales, vector, eps)]: giros sin rigidez por articulaciones
+    resortes_pc: list = field(default_factory=list)    # resorte kz con carga crítica de pandeo (pandeo_resortes)
 
     @property
     def res_mask(self) -> np.ndarray:
@@ -274,7 +275,7 @@ _COLUMNAS = {
     "SECCIONES": ("id", "tipo", "lib", "d", "t", "b", "h", "i", "j", "a", "c", "wt", "kv", "tf", "tw"),
     "BARRAS": ("id", "nodo_i", "nodo_j", "material", "seccion", "art_i", "art_j", "suprimida"),
     "APOYOS": ("nodo", "uz", "phix", "phiy"),
-    "RESORTES": ("nodo", "kz", "kphix", "kphiy"),
+    "RESORTES": ("nodo", "kz", "kphix", "kphiy", "pc"),
     "RESORTES GIRO INCLINADO": ("nodo", "k", "angulo"),
     "DESAJUSTE DE RESORTES": ("caso", "nodo", "uz", "phix", "phiy"),
     "CARGAS": ("caso", "nodo", "pz", "mx", "my"),
@@ -372,6 +373,8 @@ def cargar_modelo(ruta) -> Modelo:
     m.estab = _giros_sin_rigidez(m)
     from ..portico3d.soldaduras import leer as _leer_soldaduras
     m.soldaduras, m.electrodos = _leer_soldaduras(bloques, barras, config)
+    from struttura import pandeo_resortes as _pr
+    m.resortes_pc = _pr.leer_rectos(bloques, idx, [("kz", 0)])
     return m
 
 

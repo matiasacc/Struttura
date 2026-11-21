@@ -14,6 +14,7 @@ from ..emparrillado.informe import CSS as CSS_BASE, tabla, unidad_tension
 from . import visor
 from .barra import descripcion_articulacion
 from .entrada import NOMBRES_GDL, Modelo
+from .. import pandeo_resortes as _pr
 from ..pandeo import PANDEO
 from .esfuerzos import NOMBRES, esfuerzos_extremos, pandeo_barras, tensiones
 from .tensor import TEORIAS, analizar
@@ -273,6 +274,7 @@ def generar_html(modelo: Modelo, resultados: dict, info: Info, sold: dict | None
             filas = [[modelo.nodos[k].id] + [fg(rk[k, c]) if (modelo.resortes[k, c] > 0 or (k in ni and c < 3)) else "" for c in range(6)] for k in range(modelo.n) if (modelo.resortes[k] > 0).any() or k in ni]
             P.append("<h3>Fuerza en los resortes (sobre la estructura)</h3>")
             P.append(tabla(["Nudo", "F<sub>x</sub>", "F<sub>y</sub>", "F<sub>z</sub>", "M<sub>x</sub>", "M<sub>y</sub>", "M<sub>z</sub>"], filas, num=range(1, 7)))
+        P += _pr.tabla_html(modelo, r, tabla, fg, e_, U['F'], U['L'])
         ex = esfuerzos_extremos(modelo, r)
         P.append("<h3>Esfuerzos en los extremos de cada barra (cara +x; i = inicio, j = fin)</h3>")
         filas = []

@@ -1,0 +1,39 @@
+# Voladizo con el extremo libre apoyado en una barra reemplazada por un resorte (k = E·A/L) y su carga crítica de pandeo (Euler).
+# La barra es un tubo 60x4 de 800 mm: E = 210000, A = 703.7 mm², I = 277264 mm⁴, L = 800, extremos art-art → k = 184726 N/mm y Pc = 897911 N (botón «Calcular k de una barra»).
+# Unidades: N y mm.  CS pandeo = Pc/|F|: un resorte no sabe si la barra está comprimida; vale si lo está (a criterio del diseñador).
+PROYECTO
+proyecto;Voladizo en L 3D
+unidad_fuerza;N
+unidad_longitud;mm
+tipo;portico3d
+
+NODOS
+id;x;y;z
+1;0;0;0
+2;1000;0;0
+3;1000;600;0
+
+MATERIALES
+id;E;nu;fy
+acero;210000;0.3;235
+
+SECCIONES
+id;tipo;d;t
+tubo;tubo;60;4
+
+BARRAS
+id;nodo_i;nodo_j;material;seccion
+1;1;2;acero;tubo
+2;2;3;acero;tubo
+
+APOYOS
+nodo;ux;uy;uz;phix;phiy;phiz
+1;1;1;1;1;1;1
+
+CARGAS
+caso;nodo;Fx;Fy;Fz;Mx;My;Mz
+P;3;0;0;-1000;0;0;0
+
+RESORTES
+nodo;kz;pc
+3;184726;897911

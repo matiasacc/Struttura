@@ -379,6 +379,8 @@ def generar_html(modelo: Modelo, resultados: dict, info: Info, con_graficos: boo
             p.append(tabla(["Nodo", f"F<sub>z</sub> [{U['F']}]", f"M<sub>x</sub> [{U['M']}]", f"M<sub>y</sub> [{U['M']}]"],
                            filas, num=(1, 2, 3),
                            nota="Fuerza que el resorte ejerce sobre la estructura (= −k·(u − e); e = desajuste, 0 si no se dio)."))
+        from struttura import pandeo_resortes as _pr
+        p += _pr.tabla_html(modelo, res, tabla, fg, e_, U['F'], U['L'])
         con_tramo = bool(res.cb)
         V, Vj, T, Mi, Mj = (limpiar(esf[k]) for k in ("V", "Vj", "T", "Mi", "Mj"))
         p.append("<h4>Esfuerzos en barras (ejes locales)</h4>")

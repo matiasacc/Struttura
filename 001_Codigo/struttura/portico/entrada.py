@@ -23,6 +23,7 @@ from pathlib import Path
 
 import numpy as np
 
+from struttura import pandeo_resortes as _pr
 from struttura.emparrillado.entrada import ErrorDeEntrada, _flag, _norm, _num, _partir_bloques, _tabla, suprimir_barras, avisar_columnas
 from struttura.emparrillado.secciones import Seccion, crear_seccion
 
@@ -41,8 +42,8 @@ _COLUMNAS = {
     "SECCIONES": ("id", "tipo", "lib", "d", "t", "b", "h", "i", "a", "c", "kv", "tf", "tw"),
     "BARRAS": ("id", "nodo_i", "nodo_j", "material", "seccion", "art_i", "art_j", "pandeo", "suprimida"),
     "APOYOS": ("nodo", "ux", "uy", "phi"),
-    "RESORTES": ("nodo", "kx", "ky", "kphi"),
-    "RESORTES INCLINADOS": ("nodo", "k", "angulo"),
+    "RESORTES": ("nodo", "kx", "ky", "kphi", "pc"),
+    "RESORTES INCLINADOS": ("nodo", "k", "angulo", "pc"),
     "DESAJUSTE DE RESORTES": ("caso", "nodo", "ux", "uy", "phi", "inclinado"),
     "CARGAS": ("caso", "nodo", "px", "py", "m"),
     "CARGAS EN BARRAS": ("caso", "barra", "tipo", "valor", "valor2", "a", "b"),
@@ -125,6 +126,7 @@ class Modelo:
     peso_propio: dict | None = None                     # {"caso", "gravedad", "peso", "masa"} si se pidió peso propio
     soldaduras: list = field(default_factory=list)      # [soldadura.verificar.Soldadura] (bloque SOLDADURAS)
     electrodos: dict = field(default_factory=dict)      # electrodos propios {id: (sut, sy, tau_adm)} en MPa
+    resortes_pc: list = field(default_factory=list)     # resortes rectos con carga crítica de pandeo (pandeo_resortes)
 
     def __post_init__(self):
         if self.aut is None:
@@ -204,6 +206,7 @@ def cargar_modelo(ruta) -> Modelo:
                avisos, cargas_barra, incl, desaj, desaj_incl, aut, peso)
     from ..portico3d.soldaduras import leer as _leer_soldaduras
     m.soldaduras, m.electrodos = _leer_soldaduras(bloques, barras, config)
+    m.resortes_pc = _pr.leer_rectos(bloques, idx, [("kx", 0), ("ky", 1)])
     return m
 
 
@@ -428,7 +431,7 @@ def _leer_resortes_incl(bloques, nodos, idx):
         k = _num(r["k"], ctx, n, "k")
         if k <= 0:
             raise ErrorDeEntrada(f"Bloque {ctx}, línea {n}: k debe ser > 0")
-        out.append({"nodo": idx[r["nodo"]], "id": r["nodo"], "k": k, "beta": _num(r["angulo"], ctx, n, "angulo")})
+        out.append({"nodo": idx[r["nodo"]], "id": r["nodo"], "k": k, "beta": _num(r["angulo"], ctx, n, "angulo"), "pc": _pr.leer_pc_incl(r, ctx, n)})
     return out
 
 

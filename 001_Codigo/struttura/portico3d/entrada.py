@@ -37,6 +37,7 @@ import numpy as np
 from ..pandeo import VALORES as PANDEO_VALORES, codigo as pandeo_codigo
 
 from struttura.emparrillado.entrada import ErrorDeEntrada, _norm, _num, _partir_bloques, _tabla, suprimir_barras
+from struttura import pandeo_resortes as _pr
 from struttura.emparrillado.secciones import crear_seccion
 
 from .barra import (condensar, descripcion_articulacion, gdl_liberados, parsear_articulacion, rigidez_global,
@@ -149,6 +150,7 @@ class Modelo:
     peso_propio: dict | None = None              # {"caso", "gravedad", "peso" (fuerza), "masa" [kg]} si se pidió peso propio
     soldaduras: list = field(default_factory=list)   # [soldadura.verificar.Soldadura] (bloque SOLDADURAS)
     electrodos: dict = field(default_factory=dict)   # electrodos propios {id: (sut, sy, tau_adm)} en MPa
+    resortes_pc: list = field(default_factory=list)     # resortes rectos con carga crítica de pandeo (pandeo_resortes)
     resortes_incl: list = field(default_factory=list)   # [{"nodo": idx, "id", "k", "d": (dx, dy, dz) unitario}]  resortes lineales a tierra en dirección cualquiera
 
     @property
@@ -179,6 +181,7 @@ def cargar_modelo(ruta) -> Modelo:
     restr = _leer_bool6(bloques, "APOYOS", nodos, idx, ("ux", "uy", "uz", "phix", "phiy", "phiz"))
     resortes = _leer_resortes(bloques, nodos, idx)
     incl = _leer_resortes_incl(bloques, nodos, idx, avisos)
+    resortes_pc = _pr.leer_rectos(bloques, idx, [("kx", 0), ("ky", 1), ("kz", 2)])
     if not restr.any() and not resortes.any() and not incl:
         raise ErrorDeEntrada("No hay ningún apoyo: ni GDL restringidos (APOYOS) ni resortes (RESORTES, RESORTES INCLINADOS)")
     casos = _leer_cargas(bloques, nodos, idx)
@@ -204,7 +207,7 @@ def cargar_modelo(ruta) -> Modelo:
         if k not in usados:
             avisos.append(f"El nodo {nd.id} no está conectado a ninguna barra.")
     return Modelo(ruta, config, nodos, barras, materiales, secciones, restr, resortes, casos, prefij,
-                  cargas_barra, orig, combos, avisos, puntos, peso, soldaduras, electrodos, incl)
+                  cargas_barra, orig, combos, avisos, puntos, peso, soldaduras, electrodos, resortes_pc, incl)
 
 
 _COLUMNAS = {
@@ -213,8 +216,8 @@ _COLUMNAS = {
     "SECCIONES": ("id", "tipo", "lib", "a", "iy", "iz", "j", "cy", "cz", "wt", "d", "t", "b", "h", "tf", "tw"),
     "BARRAS": ("id", "nodo_i", "nodo_j", "material", "seccion", "rx", "ry", "rz", "giro", "art_i", "art_j", "pandeo", "suprimida"),
     "APOYOS": ("nodo", "ux", "uy", "uz", "phix", "phiy", "phiz"),
-    "RESORTES": ("nodo", "kx", "ky", "kz", "kphix", "kphiy", "kphiz"),
-    "RESORTES INCLINADOS": ("nodo", "k", "dx", "dy", "dz", "ax", "ay", "az"),
+    "RESORTES": ("nodo", "kx", "ky", "kz", "kphix", "kphiy", "kphiz", "pc"),
+    "RESORTES INCLINADOS": ("nodo", "k", "dx", "dy", "dz", "ax", "ay", "az", "pc"),
     "CARGAS": ("caso", "nodo", "fx", "fy", "fz", "mx", "my", "mz"),
     "CARGAS EN BARRAS": ("caso", "barra", "tipo", "valor", "valor2", "a"),
     "DESPLAZAMIENTOS PREFIJADOS": ("caso", "nodo", "ux", "uy", "uz", "phix", "phiy", "phiz"),
@@ -590,7 +593,7 @@ def _leer_resortes_incl(bloques, nodos, idx, avisos):
                 if abs(sc - 1.0) > 1e-3:
                     raise ErrorDeEntrada(f"Bloque {ctx}, línea {n}: los tres ángulos no cumplen cos² ax + cos² ay + cos² az = 1 (da {sc:.4g})")
             d = np.array(c) / np.linalg.norm(c)
-        out.append({"nodo": k, "id": r["nodo"], "k": kk, "d": tuple(float(x) for x in d)})
+        out.append({"nodo": k, "id": r["nodo"], "k": kk, "d": tuple(float(x) for x in d), "pc": _pr.leer_pc_incl(r, ctx, n)})
     return out
 
 

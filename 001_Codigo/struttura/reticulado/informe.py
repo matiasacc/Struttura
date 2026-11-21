@@ -163,6 +163,8 @@ def generar_html(modelo, resultados, info, con_graficos=True) -> str:
             p.append("<h4>Fuerza en los resortes (no son barras)</h4>")
             p.append(tabla(["Nodo", f"F<sub>x</sub> [{U['F']}]", f"F<sub>y</sub> [{U['F']}]", f"|F| [{U['F']}]"], filas, num=(1, 2, 3),
                            nota="Fuerza que el resorte ejerce sobre la estructura (= −k·(u − e))."))
+        from struttura import pandeo_resortes as _pr
+        p += _pr.tabla_html(modelo, res, tabla, fg, e_, U['F'], U['L'])
         vb = verificar_barras(modelo, res)
         p.append("<h4>Esfuerzos axiles y tensiones en barras</h4>")
         filas = []
