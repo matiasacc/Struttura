@@ -46,14 +46,27 @@ def _convenciones():
 <li>En los diagramas de momento, la ordenada se dibuja del lado de la fibra traccionada.  Sin deformación por corte (Euler-Bernoulli).</li></ul>"""
 
 
+def _txt_resortes(modelo, k):
+    partes = []
+    if (modelo.resortes[k] > 0).any():
+        partes.append(" ".join(f"{NOMBRES_GDL[c]}={fg(modelo.resortes[k, c])}" for c in range(6) if modelo.resortes[k, c] > 0))
+    for sp in modelo.resortes_incl:
+        if sp["nodo"] == k:
+            partes.append(f"k={fg(sp['k'])} en ({fg(sp['d'][0], 4)}; {fg(sp['d'][1], 4)}; {fg(sp['d'][2], 4)})")
+    return "; ".join(partes)
+
+
 def _datos(modelo, U):
     P = []
     P.append("<h2>1. Datos</h2>")
     P.append(tabla(["Nudo", "x", "y", "z", "Apoyo (GDL restringidos)", "Resortes"],
                    [[nd.id, fg(nd.x), fg(nd.y), fg(nd.z),
                      " ".join(NOMBRES_GDL[c] for c in range(6) if modelo.restr[k, c]) or "–",
-                     " ".join(f"{NOMBRES_GDL[c]}={fg(modelo.resortes[k, c])}" for c in range(6) if modelo.resortes[k, c] > 0) or "–"]
+                     _txt_resortes(modelo, k) or "–"]
                     for k, nd in enumerate(modelo.nodos)], num=(1, 2, 3)))
+    if modelo.resortes_incl:
+        P.append("<p class='nota'>Resorte inclinado: resorte lineal a tierra de rigidez k en la dirección unitaria d = (dx; dy; dz) (ejes globales); "
+                 "aporta k·d·dᵀ a la rigidez de (u<sub>x</sub>, u<sub>y</sub>, u<sub>z</sub>) del nudo.</p>")
     filas = []
     hay_art = any(b.articulada for b in modelo.barras)
     for b in modelo.barras:
@@ -254,9 +267,10 @@ def generar_html(modelo: Modelo, resultados: dict, info: Info, sold: dict | None
                  for k in range(modelo.n) if modelo.restr[k].any()]
         P.append("<h3>Reacciones</h3>")
         P.append(tabla(["Nudo", f"R<sub>x</sub> [{U['F']}]", "R<sub>y</sub>", "R<sub>z</sub>", f"M<sub>x</sub> [{U['M']}]", "M<sub>y</sub>", "M<sub>z</sub>"], filas, num=range(1, 7)))
-        if modelo.resortes.any():
+        if modelo.resortes.any() or modelo.resortes_incl:
             rk = limpiar(r.Rk)
-            filas = [[modelo.nodos[k].id] + [fg(rk[k, c]) if modelo.resortes[k, c] > 0 else "" for c in range(6)] for k in range(modelo.n) if (modelo.resortes[k] > 0).any()]
+            ni = {sp["nodo"] for sp in modelo.resortes_incl}
+            filas = [[modelo.nodos[k].id] + [fg(rk[k, c]) if (modelo.resortes[k, c] > 0 or (k in ni and c < 3)) else "" for c in range(6)] for k in range(modelo.n) if (modelo.resortes[k] > 0).any() or k in ni]
             P.append("<h3>Fuerza en los resortes (sobre la estructura)</h3>")
             P.append(tabla(["Nudo", "F<sub>x</sub>", "F<sub>y</sub>", "F<sub>z</sub>", "M<sub>x</sub>", "M<sub>y</sub>", "M<sub>z</sub>"], filas, num=range(1, 7)))
         ex = esfuerzos_extremos(modelo, r)

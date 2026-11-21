@@ -110,7 +110,8 @@ function st3d(id, D) {
     if (m !== "dia" || !una) D.nodos.forEach(function (n) { var p = P(n); el("circle", {cx: p[0], cy: p[1], r: 2.6, fill: "#000"}); });
     D.apoyos.forEach(function (a, i) { var p = P(D.nodos[a.k]), rig = a.r.some(function (x) { return x; });
       el("circle", {cx: p[0], cy: p[1], r: 6.5, fill: rig ? "#0b7a6b" : "#d98a00", stroke: "#fff", "stroke-width": 1.5});
-      hits.push({x: p[0], y: p[1], html: stTexto("Nudo " + D.ids[a.k] + (rig ? " · apoyo" : " · resorte"), ["ux", "uy", "uz", "φx", "φy", "φz"], a.r, cs.apo[i], a.ks, fm, D.unid[0], D.unid[1])}); });
+      hits.push({x: p[0], y: p[1], html: stTexto("Nudo " + D.ids[a.k] + (rig ? " · apoyo" : " · resorte"), ["ux", "uy", "uz", "φx", "φy", "φz"], a.r, cs.apo[i], a.ks, fm, D.unid[0], D.unid[1]) +
+        (a.ki || []).map(function (q) { return "<br>k inclinado = " + fm(q[0]) + " " + D.unid[0] + "/" + D.unid[1] + ", d = (" + fm(q[1]) + "; " + fm(q[2]) + "; " + fm(q[3]) + ") <i>(resorte)</i>"; }).join("")}); });
     if (S.ids) { D.barras.forEach(function (b, k) { if (una && k !== S.barra) return; var A = D.nodos[b.i], B = D.nodos[b.j];
         texto(add(A, sub(B, A), 0.5), b.id, "#1a5fb4", 10.5); });
       D.nodos.forEach(function (n, k) { texto(n, D.ids[k], "#000", 10.5); }); }
@@ -204,8 +205,10 @@ def _datos_visor(modelo, resultados, esc_def=None, pie=""):
     # rótulos de apoyo
     apoyos = []
     for k in range(modelo.n):
-        if modelo.restr[k].any() or modelo.resortes[k].any():
-            apoyos.append({"k": k, "r": modelo.restr[k].astype(int).tolist(), "ks": modelo.resortes[k].tolist()})
+        inc = [sp for sp in modelo.resortes_incl if sp["nodo"] == k]
+        if modelo.restr[k].any() or modelo.resortes[k].any() or inc:
+            apoyos.append({"k": k, "r": modelo.restr[k].astype(int).tolist(), "ks": modelo.resortes[k].tolist(),
+                           "ki": [[sp["k"], *sp["d"]] for sp in inc]})
     barras = [{"id": b.id, "i": b.i, "j": b.j, "R": b.R.tolist()} for b in modelo.barras]
     casos = []
     qmax = max((np.abs(np.concatenate([c[1], c[2]])).max() for r in resultados.values() for kb, c, f in r.cb if c[0] == "q"),

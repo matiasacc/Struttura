@@ -147,6 +147,7 @@ def cuerpo():
                 ["BARRAS", "<code>id;nodo_i;nodo_j;material;seccion</code> + opcional <code>rx;ry;rz</code>, <code>giro</code>, <code>art_i;art_j</code> y <code>pandeo</code>",
                  "<b>pandeo</b> (opcional): <code>art-art</code> (defecto) · <code>emp-lib</code> · <code>emp-art</code> · <code>emp-emp</code>; da CS pandeo con la menor inercia de la sección. x local de i a j. z local por defecto = +Z global (barra vertical: +X). <code>rx;ry;rz</code> = hacia dónde apunta z local. <code>giro</code> = grados alrededor de x."],
                 ["APOYOS / RESORTES", "<code>nodo;ux;uy;uz;phix;phiy;phiz</code> · <code>nodo;kx;ky;kz;kphix;kphiy;kphiz</code>", "1 = restringido. Resortes en ejes globales."],
+                ["RESORTES INCLINADOS<br>" + OP, "<code>nodo;k;dx;dy;dz;ax;ay;az</code>", "Resorte lineal a tierra en una dirección cualquiera. Dirección: vector <b>dx;dy;dz</b> o los ángulos <b>ax;ay;az</b> que forma con X, Y, Z (con dos alcanza; cos² suman 1). Aporta k·d·dᵀ. Varios por nodo."],
                 ["CARGAS", "<code>caso;nodo;Fx;Fy;Fz;Mx;My;Mz</code>", "Ejes globales."],
                 ["CARGAS EN BARRAS", "<code>caso;barra;tipo;valor;valor2;a</code>",
                  "<code>qx qy qz</code> (local) · <code>qgx qgy qgz</code> (global, por longitud de barra) · <code>Px Py Pz</code>, <code>Pgx Pgy Pgz</code> (puntuales, <b>a</b> = distancia desde i) · <code>Mx My Mz</code>, <code>Mgx Mgy Mgz</code> (momentos puntuales). valor2 = valor en j (trapecio)."],

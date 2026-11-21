@@ -33,8 +33,9 @@ def exportar_csv(modelo, resultados, info, carpeta: Path, sold=None):
             desp.append([nombre, n.id, *res.u[k]])
             if modelo.restr[k].any():
                 reac.append([nombre, n.id, *[res.R[k, c] if modelo.restr[k, c] else "" for c in range(6)]])
-            if (modelo.resortes[k] > 0).any():
-                resr.append([nombre, n.id, *[res.Rk[k, c] if modelo.resortes[k, c] > 0 else "" for c in range(6)]])
+            tiene_i = any(sp["nodo"] == k for sp in modelo.resortes_incl)
+            if (modelo.resortes[k] > 0).any() or tiene_i:
+                resr.append([nombre, n.id, *[res.Rk[k, c] if (modelo.resortes[k, c] > 0 or (tiene_i and c < 3)) else "" for c in range(6)]])
         for k, b in enumerate(modelo.barras):
             for lab, v in (("i", ex[k]["i"]), ("j", ex[k]["j"])):
                 esf.append([nombre, b.id, lab, *v])

@@ -50,6 +50,7 @@ const V = (() => {
     }
     for (const f of filas('APOYOS')) { const n = get(blk('APOYOS'), f, 'nodo'); if (n) m.apoyos.set(n, apoyoDe(n)); }
     for (const f of filas('RESORTES')) { const b = blk('RESORTES'); if (esq().geo.resortes.some(c => num(get(b, f, c)))) m.resortes.add(get(b, f, 'nodo')); }
+    for (const f of filas('RESORTES INCLINADOS')) { const b = blk('RESORTES INCLINADOS'); if (num(get(b, f, 'k'))) m.resortes.add(get(b, f, 'nodo')); }
     const cb = blk('CARGAS');
     if (cb) for (const f of cb.filas) m.cargas.push({ caso: get(cb, f, 'caso'), nodo: get(cb, f, 'nodo'), v: Object.fromEntries(esq().geo.cargas.map(c => [c, num(get(cb, f, c)) || 0])) });
     const bq = blk('CARGAS EN BARRAS');

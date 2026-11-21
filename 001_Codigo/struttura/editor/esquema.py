@@ -155,6 +155,17 @@ def resortes_incl(giro=False):
                   "Resorte cuyo eje forma un ángulo con +X.")
 
 
+def resortes_incl3d():
+    return bloque("RESORTES INCLINADOS",
+                  [C("nodo", "ref:nodos", "Nodo con resorte", ob=True), C("k", "num", "Rigidez del resorte (fuerza/longitud)", ob=True),
+                   C("dx", "num", "Dirección del resorte: componente en x (vector; se normaliza)"), C("dy", "num", "Dirección del resorte: componente en y"),
+                   C("dz", "num", "Dirección del resorte: componente en z"),
+                   C("ax", "num", "Ángulo del resorte con el eje X [grados]"), C("ay", "num", "Ángulo del resorte con el eje Y [grados]"),
+                   C("az", "num", "Ángulo del resorte con el eje Z [grados]")],
+                  "Resorte lineal a tierra en una dirección cualquiera.  Dar la dirección con el vector (dx; dy; dz) o con los ángulos que forma con X, Y, Z "
+                  "(con dos ángulos alcanza: el tercero se calcula).  Se pueden poner varios resortes en un nodo.", min=["nodo", "k"])
+
+
 def cargas(cols, ay):
     return bloque("CARGAS", [C("caso", "ref:casos", "Nombre del caso de carga", ob=True), C("nodo", "ref:nodos", "Nodo cargado", ob=True)]
                   + [C(n, "num", t) for n, t in cols], ay)
@@ -213,7 +224,7 @@ def esquema_portico3d():
                         nodos(["x", "y", "z"]), materiales(g=True),
                         secciones(SECC_BASE + SECC_PARED, sec),
                         barras(3, {"t": "opc", "ay": ART_3D, "op": ["1", "my", "mz", "t", "my+t", "mz+t", "my+mz+t"]}, rot=True),
-                        apoyos(g6, "Apoyos: 1 = restringido, vacío = libre."), resortes(k6),
+                        apoyos(g6, "Apoyos: 1 = restringido, vacío = libre."), resortes(k6), resortes_incl3d(),
                         cargas(from_cargas, "Cargas en nodos, en ejes globales."), cb, prefijados([(a, b) for a, b in g6]),
                         combinaciones(), pt, soldaduras_modelo(), electrodos()]}
 

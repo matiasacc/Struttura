@@ -62,6 +62,10 @@ def ensamblar_barras(modelo: Modelo) -> np.ndarray:
 def matriz_resortes(modelo: Modelo) -> np.ndarray:
     Ks = np.zeros((6 * modelo.n, 6 * modelo.n))
     Ks[np.diag_indices_from(Ks)] += modelo.resortes.reshape(-1)
+    for sp in modelo.resortes_incl:                      # resorte lineal inclinado a tierra: k·d·dᵀ sobre (ux, uy, uz)
+        d = np.array(sp["d"])
+        g = 6 * sp["nodo"]
+        Ks[g:g + 3, g:g + 3] += sp["k"] * np.outer(d, d)
     return Ks
 
 

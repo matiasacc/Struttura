@@ -367,7 +367,7 @@ function renderTabla() {
   if (sp.k === 'claves') return renderClaves(wrap, sp);
   if (!b || !b.filas.length) {
     wrap.append(...[avisoBiblioteca(sp)].filter(Boolean), el('div', { class: 'vacio' }, sp.ob ? 'Este bloque todavía no tiene filas.' : 'Bloque opcional: si no lo necesitás, dejalo vacío (no se escribe en el archivo).'));
-    wrap.append(el('div', { class: 'barra-tabla' }, el('button', { onclick: () => agregarFila() }, '+ Agregar fila'), selectorBiblioteca(sp)));
+    wrap.append(el('div', { class: 'barra-tabla' }, el('button', { onclick: () => agregarFila() }, '+ Agregar fila'), selectorBiblioteca(sp), botonCalcK(sp)));
     return;
   }
   const cols = colsMostradas(b, sp);
@@ -386,10 +386,39 @@ function renderTabla() {
     tb.append(tr);
   });
   tabla.append(tb);
-  wrap.append(...[avisoBiblioteca(sp)].filter(Boolean), tabla, el('div', { class: 'barra-tabla' }, el('button', { onclick: () => agregarFila() }, '+ Agregar fila'), selectorBiblioteca(sp), sp.t === 'SECCIONES' ? el('label', { class: 'nota' }, el('input', { type: 'checkbox', checked: !!S.todasCols, onchange: e => { S.todasCols = e.target.checked; renderTabla(); } }), ' Mostrar todas las columnas') : null,
+  wrap.append(...[avisoBiblioteca(sp)].filter(Boolean), tabla, el('div', { class: 'barra-tabla' }, el('button', { onclick: () => agregarFila() }, '+ Agregar fila'), selectorBiblioteca(sp), botonCalcK(sp), sp.t === 'SECCIONES' ? el('label', { class: 'nota' }, el('input', { type: 'checkbox', checked: !!S.todasCols, onchange: e => { S.todasCols = e.target.checked; renderTabla(); } }), ' Mostrar todas las columnas') : null,
     el('span', { class: 'nota' }, 'Se pueden pegar celdas copiadas de Excel (Ctrl+V).  Pasá el mouse por el título de una columna para ver qué es.')));
   wrap.scrollTop = st;
   ajustarAncho();
+}
+function botonCalcK(sp) { return ['RESORTES', 'RESORTES INCLINADOS'].includes(sp.t) ? el('button', { title: 'Calcula la rigidez axial de una barra, k = E·A/L', onclick: () => calculadoraK(sp) }, 'Calcular k de una barra (EA/L)') : null; }
+function calculadoraK(sp) {                    // rigidez axial de una barra como resorte: k = E·A/L  (Gere & Goodno, cap. 2)
+  const uF = unidad('F'), uL = unidad('L');
+  const num_ = (t, dst) => { const c = convertirUnidad(t, dst); if (c && c.v != null) return parseFloat(String(c.v).replace(',', '.')); if (c && c.err) return NaN; const x = parseFloat(String(t).replace(',', '.')); return isFinite(x) && String(t).trim() !== '' ? x : NaN; };
+  const campos = {};
+  const mats = filas('MATERIALES').map(f => get(blk('MATERIALES'), f, 'id')).filter(Boolean), secs = filas('SECCIONES').map(f => get(blk('SECCIONES'), f, 'id')).filter(Boolean);
+  const salida = el('div', { class: 'resultado-k' }), col = sp.t === 'RESORTES' ? el('select', {}, sp.cols.filter(c => /^k[xyz]?$/.test(c.n)).map(c => el('option', { value: c.n }, c.et || c.n))) : null;
+  const calc = () => {
+    const E = num_(campos.E.value, `${uF}/${uL}²`), A = num_(campos.A.value, `${uL}²`), L = num_(campos.L.value, uL);
+    const k = E * A / L; campos.k = isFinite(k) && L > 0 ? k : null;
+    salida.textContent = campos.k == null ? 'Completar E, A y L (con unidades válidas)' : `k = E·A/L = ${fmt(campos.k)} ${uF}/${uL}`;
+  };
+  const fila = (txt, ayuda, inp) => el('label', { class: 'fila-k', title: ayuda }, txt, inp);
+  campos.E = el('input', { type: 'text', placeholder: `E [${uF}/${uL}²]`, oninput: calc, autocomplete: 'off' });
+  campos.A = el('input', { type: 'text', placeholder: `A [${uL}²]`, oninput: calc, autocomplete: 'off' });
+  campos.L = el('input', { type: 'text', placeholder: `L [${uL}]`, oninput: calc, autocomplete: 'off' });
+  const deMat = el('select', { onchange: e => { const b = blk('MATERIALES'), f = b.filas.find(x => get(b, x, 'id') === e.target.value); if (!f) return; const lib = get(b, f, 'lib'); const v = get(b, f, 'e') || (lib && (fichaDe('material', lib) || {}).e); if (v != null && v !== '') campos.E.value = String(v); calc(); } },
+    el('option', { value: '' }, 'o tomar de un material del modelo…'), mats.map(m => el('option', { value: m }, m)));
+  const deSec = el('select', { onchange: e => { const b = blk('SECCIONES'), f = b.filas.find(x => get(b, x, 'id') === e.target.value); if (!f) return; const v = get(b, f, 'a') || deBiblioteca(b, f, 'a'); if (v != null && v !== '') campos.A.value = String(v); calc(); } },
+    el('option', { value: '' }, 'o tomar de una sección del modelo…'), secs.map(m => el('option', { value: m }, m)));
+  calc();
+  modal(el('div', { class: 'caja' }, el('h3', {}, 'Rigidez axial de una barra: k = E·A/L'),
+    el('div', { class: 'cuerpo' },
+      el('p', { class: 'nota' }, `Se puede escribir con unidad («210 GPa», «5 cm2», «2 m»); se pasa a ${uF}, ${uL}.  Fuente: Gere & Goodno, cap. 2 (rigidez axial de una barra prismática).  Vale para una barra recta de sección constante cargada axialmente.`),
+      fila('E', 'Módulo de elasticidad', campos.E), deMat, fila('A', 'Área de la sección', campos.A), deSec, fila('L', 'Longitud de la barra', campos.L), salida,
+      col ? fila('Poner k en', 'Columna de la tabla donde se escribe el valor', col) : null),
+    el('div', { class: 'pie' }, el('button', { onclick: cerrarModal }, 'Cancelar'),
+      el('button', { class: 'principal', onclick: () => { if (campos.k == null) return; agregarFila({ [col ? col.value : 'k']: fmt(campos.k) }); cerrarModal(); } }, 'Agregar fila con este k'))));
 }
 function avisoBiblioteca(sp) {                 // si no se encuentra el archivo, se dice dónde se lo busca y qué hacer
   const per = sp.t === 'SECCIONES';

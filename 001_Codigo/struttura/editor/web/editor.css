@@ -138,3 +138,5 @@ select.agregar-lib{margin-left:8px;max-width:340px}
 .aviso-bib code{word-break:break-all}
 
 .con-u{display:flex;align-items:center;gap:3px}.con-u input{flex:1;width:1px;min-width:36px}small.u{color:var(--apagado);white-space:nowrap;font-size:11px;padding-right:2px}
+.fila-k{display:flex;align-items:center;gap:8px;margin:6px 0}.fila-k>input,.fila-k>select{flex:1}
+.caja .cuerpo select{margin:2px 0 4px;max-width:100%}.resultado-k{margin:10px 0 4px;font-weight:600;font-family:var(--mono)}

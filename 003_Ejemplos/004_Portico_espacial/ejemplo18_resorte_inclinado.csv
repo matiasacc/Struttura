@@ -1,0 +1,36 @@
+# Voladizo con resorte inclinado a tierra en el extremo libre.  Unidades: N y mm.
+# El resorte forma 45° con X, 60° con Y y 60° con Z (el tercer ángulo se puede omitir: se calcula).
+PROYECTO
+proyecto;Voladizo con resorte inclinado
+unidad_fuerza;N
+unidad_longitud;mm
+tipo;portico3d
+
+NODOS
+id;x;y;z
+1;0;0;0
+2;1000;0;0
+
+MATERIALES
+id;E;nu;fy
+acero;210000;0.3;235
+
+SECCIONES
+id;tipo;d;t
+tubo;tubo;60;4
+
+BARRAS
+id;nodo_i;nodo_j;material;seccion
+1;1;2;acero;tubo
+
+APOYOS
+nodo;ux;uy;uz;phix;phiy;phiz
+1;1;1;1;1;1;1
+
+RESORTES INCLINADOS
+nodo;k;ax;ay;az
+2;500;45;60;
+
+CARGAS
+caso;nodo;Fx;Fy;Fz;Mx;My;Mz
+P;2;0;0;-1000;0;0;0

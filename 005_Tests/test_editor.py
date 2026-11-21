@@ -525,6 +525,22 @@ class TestPagina(unittest.TestCase):
         self.assertEqual(self.errs, [])
         pg.close()
 
+    def test_calculadora_de_rigidez_y_resorte_inclinado(self):
+        pg = self.pagina()
+        pg.evaluate("async t => cargarDoc(await api('nuevo', {tipo: t}))", "portico3d")
+        self.assertTrue(pg.evaluate("!!spec('RESORTES INCLINADOS')"))
+        self.assertEqual(pg.evaluate("spec('RESORTES INCLINADOS').cols.map(c => c.n)"), ["nodo", "k", "dx", "dy", "dz", "ax", "ay", "az"])
+        pg.evaluate("t => irBloque(t)", "RESORTES INCLINADOS")
+        pg.get_by_text("Calcular k de una barra (EA/L)").click()
+        pg.fill("#modal input[placeholder^='E ']", "210 GPa")
+        pg.fill("#modal input[placeholder^='A ']", "5 cm2")
+        pg.fill("#modal input[placeholder^='L ']", "2 m")
+        self.assertIn("52500", pg.inner_text("#modal .resultado-k"))
+        pg.get_by_text("Agregar fila con este k").click()
+        self.assertEqual(pg.evaluate("get(blk('RESORTES INCLINADOS'), filas('RESORTES INCLINADOS')[0], 'k')"), "52500")
+        self.assertEqual(self.errs, [])
+        pg.close()
+
     def test_renombrar_un_nodo_actualiza_las_barras(self):
         pg = self.pagina()
         self.abrir(pg, str(RAIZ / "003_Ejemplos" / "002_Portico" / "ejemplo14_portico_biempotrado.csv"))

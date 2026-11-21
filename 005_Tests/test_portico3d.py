@@ -1,5 +1,6 @@
 """Tests del pórtico espacial (3D).  Ejecutar:  python -m unittest discover -s 005_Tests   (desde la raíz)"""
 import math
+import os
 import subprocess
 import sys
 import tempfile
@@ -920,3 +921,40 @@ class TestParedDelgada(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestResorteInclinado3D(unittest.TestCase):
+    """RESORTES INCLINADOS (3D): k·d·dᵀ; la dirección se da con vector o con ángulos a los ejes."""
+
+    BASE = os.path.join(os.path.dirname(__file__), "..", "003_Ejemplos", "004_Portico_espacial", "ejemplo1_voladizo_en_L.csv")
+
+    def _correr(self, extra):
+        import tempfile
+        from struttura.portico3d.entrada import cargar_modelo
+        from struttura.portico3d.solver import resolver
+        with tempfile.TemporaryDirectory() as d:
+            f = os.path.join(d, "m.csv")
+            with open(f, "w", encoding="utf-8") as h:
+                h.write(open(self.BASE, encoding="utf-8").read() + "\n" + extra + "\n")
+            m = cargar_modelo(f)
+        return m, resolver(m)[0]["P"]
+
+    def test_equivale_al_resorte_en_z_y_al_proyectado(self):
+        _, r0 = self._correr("RESORTES\nnodo;kz\n3;50")
+        for extra in ("RESORTES INCLINADOS\nnodo;k;dx;dy;dz\n3;50;0;0;-7",
+                      "RESORTES INCLINADOS\nnodo;k;ax;ay;az\n3;50;90;90;0",
+                      "RESORTES INCLINADOS\nnodo;k;ax;ay;az\n3;50;90;90;"):
+            _, r = self._correr(extra)
+            self.assertLess(abs(r.u - r0.u).max(), 1e-12)
+        m, r = self._correr("RESORTES INCLINADOS\nnodo;k;dx;dy;dz\n3;50;1;1;1")
+        d = np.ones(3) / np.sqrt(3)
+        self.assertTrue(np.allclose(r.Rk[2, :3], -50 * d * (d @ r.u[2, :3])))
+
+    def test_errores_de_direccion(self):
+        from struttura.portico3d.entrada import ErrorDeEntrada
+        for extra in ("RESORTES INCLINADOS\nnodo;k;ax;ay;az\n3;50;10;10;10",          # cos² no suma 1
+                      "RESORTES INCLINADOS\nnodo;k;ax;ay;az\n3;50;10;;",              # un solo ángulo
+                      "RESORTES INCLINADOS\nnodo;k;dx;dy;dz;ax\n3;50;1;0;0;90",       # vector y ángulos
+                      "RESORTES INCLINADOS\nnodo;k;dx;dy;dz\n3;50;0;0;0"):            # vector nulo
+            with self.assertRaises(ErrorDeEntrada, msg=extra):
+                self._correr(extra)

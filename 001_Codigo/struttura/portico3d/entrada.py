@@ -11,6 +11,8 @@
                                                 se transmiten N, Vy, Vz y T);  o my / mz / t combinados con '+'  (ej.: my+t)
     APOYOS     nodo;ux;uy;uz;phix;phiy;phiz     (1 = restringido)
     RESORTES   nodo;kx;ky;kz;kphix;kphiy;kphiz  (ejes globales)
+    RESORTES INCLINADOS  nodo;k;dx;dy;dz;ax;ay;az  (resorte lineal en una dirección cualquiera, a tierra;
+               dirección = vector dx;dy;dz  o  ángulos ax;ay;az que forma con X, Y, Z)
     CARGAS     caso;nodo;Fx;Fy;Fz;Mx;My;Mz      (ejes globales)
     CARGAS EN BARRAS   caso;barra;tipo;valor;valor2;a      (tipos en cargas_barra.py)
     DESPLAZAMIENTOS PREFIJADOS   caso;nodo;ux;uy;uz;phix;phiy;phiz
@@ -42,7 +44,7 @@ from .barra import (condensar, descripcion_articulacion, gdl_liberados, parsear_
 from .cargas_barra import TIPOS as TIPOS_CARGA, agregar_longitud, convertir
 
 NOMBRES_GDL = ("ux", "uy", "uz", "φx", "φy", "φz")
-TITULOS = ["PROYECTO", "NODOS", "MATERIALES", "SECCIONES", "BARRAS", "APOYOS", "RESORTES", "CARGAS",
+TITULOS = ["PROYECTO", "NODOS", "MATERIALES", "SECCIONES", "BARRAS", "APOYOS", "RESORTES", "RESORTES INCLINADOS", "CARGAS",
            "CARGAS EN BARRAS", "DESPLAZAMIENTOS PREFIJADOS", "COMBINACIONES", "PUNTOS DE TENSION", "SOLDADURAS", "ELECTRODOS"]
 OBLIGATORIOS = ["NODOS", "MATERIALES", "SECCIONES", "BARRAS", "APOYOS"]
 
@@ -147,6 +149,7 @@ class Modelo:
     peso_propio: dict | None = None              # {"caso", "gravedad", "peso" (fuerza), "masa" [kg]} si se pidió peso propio
     soldaduras: list = field(default_factory=list)   # [soldadura.verificar.Soldadura] (bloque SOLDADURAS)
     electrodos: dict = field(default_factory=dict)   # electrodos propios {id: (sut, sy, tau_adm)} en MPa
+    resortes_incl: list = field(default_factory=list)   # [{"nodo": idx, "id", "k", "d": (dx, dy, dz) unitario}]  resortes lineales a tierra en dirección cualquiera
 
     @property
     def n(self) -> int:
@@ -172,8 +175,9 @@ def cargar_modelo(ruta) -> Modelo:
     barras = _leer_barras(bloques, nodos, idx, materiales, secciones, avisos)
     restr = _leer_bool6(bloques, "APOYOS", nodos, idx, ("ux", "uy", "uz", "phix", "phiy", "phiz"))
     resortes = _leer_resortes(bloques, nodos, idx)
-    if not restr.any() and not resortes.any():
-        raise ErrorDeEntrada("No hay ningún apoyo: ni GDL restringidos (APOYOS) ni resortes (RESORTES)")
+    incl = _leer_resortes_incl(bloques, nodos, idx, avisos)
+    if not restr.any() and not resortes.any() and not incl:
+        raise ErrorDeEntrada("No hay ningún apoyo: ni GDL restringidos (APOYOS) ni resortes (RESORTES, RESORTES INCLINADOS)")
     casos = _leer_cargas(bloques, nodos, idx)
     cargas_barra, orig = _leer_cargas_barra(bloques, barras, avisos)
     peso = _peso_propio(config, barras, cargas_barra, orig)
@@ -197,7 +201,7 @@ def cargar_modelo(ruta) -> Modelo:
         if k not in usados:
             avisos.append(f"El nodo {nd.id} no está conectado a ninguna barra.")
     return Modelo(ruta, config, nodos, barras, materiales, secciones, restr, resortes, casos, prefij,
-                  cargas_barra, orig, combos, avisos, puntos, peso, soldaduras, electrodos)
+                  cargas_barra, orig, combos, avisos, puntos, peso, soldaduras, electrodos, incl)
 
 
 _COLUMNAS = {
@@ -207,6 +211,7 @@ _COLUMNAS = {
     "BARRAS": ("id", "nodo_i", "nodo_j", "material", "seccion", "rx", "ry", "rz", "giro", "art_i", "art_j", "pandeo"),
     "APOYOS": ("nodo", "ux", "uy", "uz", "phix", "phiy", "phiz"),
     "RESORTES": ("nodo", "kx", "ky", "kz", "kphix", "kphiy", "kphiz"),
+    "RESORTES INCLINADOS": ("nodo", "k", "dx", "dy", "dz", "ax", "ay", "az"),
     "CARGAS": ("caso", "nodo", "fx", "fy", "fz", "mx", "my", "mz"),
     "CARGAS EN BARRAS": ("caso", "barra", "tipo", "valor", "valor2", "a"),
     "DESPLAZAMIENTOS PREFIJADOS": ("caso", "nodo", "ux", "uy", "uz", "phix", "phiy", "phiz"),
@@ -537,6 +542,53 @@ def _leer_resortes(bloques, nodos, idx):
             raise ErrorDeEntrada(f"Bloque RESORTES, línea {n}: las rigideces deben ser >= 0")
         k6[k] += np.where(np.isnan(v), 0.0, v)
     return k6
+
+
+def _leer_resortes_incl(bloques, nodos, idx, avisos):
+    """RESORTES INCLINADOS:  nodo;k;dx;dy;dz;ax;ay;az.  Resorte lineal a tierra con rigidez k [fuerza/longitud] en la
+    dirección d (unitaria): aporta k·d·dᵀ a (ux, uy, uz) del nodo.  La dirección se da con el vector (dx;dy;dz) o con los
+    ángulos ax, ay, az [°] que forma con los ejes X, Y, Z (cosenos directores: cos²ax + cos²ay + cos²az = 1).
+    Con dos ángulos el tercero se calcula (componente >= 0).  Se pueden poner varios resortes en un mismo nodo."""
+    ctx = "RESORTES INCLINADOS"
+    out = []
+    for n, r in _tabla(bloques, ctx, ["nodo", "k"], requerido=False) or []:
+        k = _fila_nodo(r, nodos, idx, ctx, n)
+        kk = _num(r["k"], ctx, n, "k")
+        if kk <= 0:
+            raise ErrorDeEntrada(f"Bloque {ctx}, línea {n}: k debe ser > 0")
+        nan = float("nan")
+        v = [_num(r.get(c), ctx, n, c, obligatorio=False, defecto=nan) for c in ("dx", "dy", "dz")]
+        a = [_num(r.get(c), ctx, n, c, obligatorio=False, defecto=nan) for c in ("ax", "ay", "az")]
+        hay_v, hay_a = any(not np.isnan(x) for x in v), any(not np.isnan(x) for x in a)
+        if hay_v and hay_a:
+            raise ErrorDeEntrada(f"Bloque {ctx}, línea {n}: dar la dirección con el vector (dx;dy;dz) o con los ángulos (ax;ay;az), no con ambos")
+        if not hay_v and not hay_a:
+            raise ErrorDeEntrada(f"Bloque {ctx}, línea {n}: falta la dirección (dx;dy;dz) o los ángulos (ax;ay;az)")
+        if hay_v:
+            d = np.array([0.0 if np.isnan(x) else x for x in v])
+            nd = float(np.linalg.norm(d))
+            if nd == 0:
+                raise ErrorDeEntrada(f"Bloque {ctx}, línea {n}: el vector de dirección es nulo")
+            d = d / nd
+        else:
+            falt = [i for i, x in enumerate(a) if np.isnan(x)]
+            if len(falt) > 1:
+                raise ErrorDeEntrada(f"Bloque {ctx}, línea {n}: con ángulos hay que dar al menos dos de los tres (ax;ay;az)")
+            c = [np.cos(np.radians(x)) if not np.isnan(x) else np.nan for x in a]
+            if falt:
+                resto = 1.0 - sum(x * x for x in c if not np.isnan(x))
+                if resto < -1e-9:
+                    raise ErrorDeEntrada(f"Bloque {ctx}, línea {n}: los dos ángulos no son compatibles (cos² ax + cos² ay + cos² az = 1)")
+                c[falt[0]] = float(np.sqrt(max(resto, 0.0)))
+                ang = float(np.degrees(np.arccos(c[falt[0]])))
+                avisos.append(f"Nota: RESORTES INCLINADOS, línea {n}: el ángulo {'xyz'[falt[0]]} se calculó = {ang:.4g}° (cos² ax + cos² ay + cos² az = 1; componente ≥ 0)")
+            else:
+                sc = sum(x * x for x in c)
+                if abs(sc - 1.0) > 1e-3:
+                    raise ErrorDeEntrada(f"Bloque {ctx}, línea {n}: los tres ángulos no cumplen cos² ax + cos² ay + cos² az = 1 (da {sc:.4g})")
+            d = np.array(c) / np.linalg.norm(c)
+        out.append({"nodo": k, "id": r["nodo"], "k": kk, "d": tuple(float(x) for x in d)})
+    return out
 
 
 def _leer_cargas(bloques, nodos, idx):
